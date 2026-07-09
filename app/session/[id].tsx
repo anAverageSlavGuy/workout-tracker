@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { useSession, useAddSet, useUpdateSet, useDeleteSet } from '../../hooks/useSessions'
+import { useSession, useAddSet, useUpdateSet, useDeleteSet, useDeleteSession } from '../../hooks/useSessions'
 import { ExercisePicker } from '../../components/ExercisePicker'
 import { SetRow } from '../../components/SetRow'
 import { Exercise, SessionSet } from '../../lib/types'
@@ -21,6 +21,7 @@ export default function SessionScreen() {
   const addSet = useAddSet()
   const updateSet = useUpdateSet()
   const deleteSet = useDeleteSet()
+  const deleteSession = useDeleteSession()
 
   const [showPicker, setShowPicker] = useState(false)
   // Stato separato per ogni esercizio: { weight, reps }
@@ -73,18 +74,19 @@ export default function SessionScreen() {
 
   async function handleAddExercise(exercise: Exercise) {
     // Aggiunge l'esercizio con un set placeholder (peso 0, rep dalle input o default 10)
+    const maxSetNumber = Math.max(0, ...(session?.session_sets?.map(s => s.set_number) ?? []))
     const { weight, reps } = getInput(exercise.id)
-    const existingSets = setsByExercise.find(g => g.exercise.id === exercise.id)?.sets ?? []
     await addSet.mutateAsync({
       session_id: id,
       exercise_id: exercise.id,
-      set_number: existingSets.length + 1,
+      set_number: maxSetNumber + 1,
       weight: parseFloat(weight) || 0,
       reps: parseInt(reps, 10) || 10,
     })
   }
 
   async function handleAddSet(exercise: Exercise) {
+    const maxSetNumber = Math.max(0, ...(session?.session_sets?.map(s => s.set_number) ?? []))
     const group = setsByExercise.find(g => g.exercise.id === exercise.id)
     const lastSet = group?.sets.at(-1)
     const { weight, reps } = getInput(exercise.id)
@@ -98,11 +100,21 @@ export default function SessionScreen() {
     await addSet.mutateAsync({
       session_id: id,
       exercise_id: exercise.id,
-      set_number: (group?.sets.length ?? 0) + 1,
+      set_number: maxSetNumber + 1,
       weight: w,
       reps: r,
     })
     clearInput(exercise.id)
+  }
+
+  function handleDeleteSession() {
+    Alert.alert('Elimina allenamento', 'Sei sicuro di voler eliminare questo allenamento?', [
+      { text: 'Annulla', style: 'cancel' },
+      { text: 'Elimina', style: 'destructive', onPress: async () => {
+        await deleteSession.mutateAsync(id)
+        router.replace('/(tabs)')
+      }},
+    ])
   }
 
   if (isLoading || !session) {
@@ -204,6 +216,15 @@ export default function SessionScreen() {
           ))}
         </ScrollView>
 
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.deleteSessionBtn} onPress={handleDeleteSession} disabled={deleteSession.isPending}>
+          {deleteSession.isPending
+            ? <ActivityIndicator color={colors.accent} size="small" />
+            : <Text style={styles.deleteSessionBtnText}>ELIMINA ALLENAMENTO</Text>
+          }
+        </TouchableOpacity>
+      </View>
+
       <ExercisePicker visible={showPicker} onClose={() => setShowPicker(false)} onSelect={handleAddExercise} />
     </View>
   )
@@ -245,4 +266,7 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 13, color: colors.textMuted, letterSpacing: 1 },
   emptyBtn: { marginTop: 8, borderWidth: 1, borderColor: colors.accent, paddingHorizontal: 24, paddingVertical: 12 },
   emptyBtnText: { fontSize: 11, fontWeight: '900', color: colors.accent, letterSpacing: 3 },
+  footer: { padding: 16, borderTopWidth: 1, borderTopColor: colors.border },
+  deleteSessionBtn: { borderWidth: 1, borderColor: colors.accent, paddingVertical: 12, alignItems: 'center' },
+  deleteSessionBtnText: { fontSize: 11, fontWeight: '900', color: colors.accent, letterSpacing: 3 },
 })
