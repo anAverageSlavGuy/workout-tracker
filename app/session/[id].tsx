@@ -50,9 +50,9 @@ export default function SessionScreen() {
 
   function handleBack() {
     const goBack = () => {
-      // Modal non crea history entry, naviga manualmente verso tabs
-      if (router.canGoBack?.()) {
-        router.back()
+      // Modal non crea history entry su web — usa window.location per reload
+      if (Platform.OS === 'web') {
+        window.location.href = '/'
       } else {
         router.replace('/(tabs)')
       }
