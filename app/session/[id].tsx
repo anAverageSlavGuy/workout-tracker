@@ -49,15 +49,14 @@ export default function SessionScreen() {
   }, [session])
 
   function handleBack() {
-    Alert.alert('Debug', 'Bottone tappato', [
-      { text: 'OK', onPress: () => {
-        if (Platform.OS === 'web') {
-          window.location.href = '/'
-        } else {
-          router.replace('/(tabs)')
-        }
-      } },
-    ])
+    if ((session?.session_sets?.length ?? 0) > 0) {
+      Alert.alert('Esci', 'Vuoi uscire? I dati sono già salvati.', [
+        { text: 'Annulla', style: 'cancel' },
+        { text: 'Esci', onPress: () => router.back() },
+      ])
+    } else {
+      router.back()
+    }
   }
 
   async function handleAddExercise(exercise: Exercise) {
