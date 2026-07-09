@@ -49,33 +49,15 @@ export default function SessionScreen() {
   }, [session])
 
   function handleBack() {
-    const goBack = () => {
-      try {
-        console.log('goBack called, platform:', Platform.OS)
+    Alert.alert('Debug', 'Bottone tappato', [
+      { text: 'OK', onPress: () => {
         if (Platform.OS === 'web') {
-          console.log('window.location available:', typeof window !== 'undefined' && typeof window.location !== 'undefined')
-          if (typeof window !== 'undefined' && typeof window.location !== 'undefined') {
-            window.location.href = '/'
-          } else {
-            console.log('window.location not available')
-          }
+          window.location.href = '/'
         } else {
-          console.log('using router.replace')
           router.replace('/(tabs)')
         }
-      } catch (e) {
-        console.error('handleBack error:', e)
-      }
-    }
-
-    if ((session?.session_sets?.length ?? 0) > 0) {
-      Alert.alert('Esci', 'Vuoi uscire? I dati sono già salvati.', [
-        { text: 'Annulla', style: 'cancel' },
-        { text: 'Esci', onPress: goBack },
-      ])
-    } else {
-      goBack()
-    }
+      } },
+    ])
   }
 
   async function handleAddExercise(exercise: Exercise) {
