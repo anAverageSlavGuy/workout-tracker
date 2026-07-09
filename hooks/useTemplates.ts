@@ -55,3 +55,52 @@ export function useDeleteTemplate() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['templates'] }),
   })
 }
+
+export function useUpdateTemplate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, name }: { id: string; name: string }) => {
+      const { data, error } = await supabase
+        .from('workout_templates')
+        .update({ name })
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['templates'] }),
+  })
+}
+
+export function useAddTemplateExercise() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ template_id, exercise_id, target_sets, target_reps, position }:
+      { template_id: string; exercise_id: string; target_sets: number; target_reps: number; position: number }) => {
+      const { data, error } = await supabase
+        .from('template_exercises')
+        .insert({ template_id, exercise_id, target_sets, target_reps, position })
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['templates'] }),
+  })
+}
+
+export function useDeleteTemplateExercise() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ template_id, exercise_id }: { template_id: string; exercise_id: string }) => {
+      const { error } = await supabase
+        .from('template_exercises')
+        .delete()
+        .eq('template_id', template_id)
+        .eq('exercise_id', exercise_id)
+      if (error) throw error
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['templates'] }),
+  })
+}

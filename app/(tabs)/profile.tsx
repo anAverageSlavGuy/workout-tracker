@@ -46,7 +46,7 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  content: { flex: 1, padding: 24, gap: 16 },
+  content: { flex: 1, padding: 24, gap: 24 },
   ornamentRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   ornamentBottom: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   line: { flex: 1, height: 1, backgroundColor: colors.border },
@@ -54,9 +54,9 @@ const styles = StyleSheet.create({
   title: { fontSize: 28, fontWeight: '900', color: colors.text, letterSpacing: 8, marginBottom: 8 },
   card: { flexDirection: 'row', borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: 16, gap: 16 },
   cardAccent: { width: 2, backgroundColor: colors.accent },
-  label: { fontSize: 9, color: colors.textMuted, letterSpacing: 3, marginBottom: 4 },
+  label: { fontSize: 9, color: colors.textMuted, letterSpacing: 3, marginBottom: 8 },
   value: { fontSize: 15, color: colors.text },
-  signOutBtn: { borderWidth: 1, borderColor: colors.accent, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
+  signOutBtn: { borderWidth: 1, borderColor: colors.accent, paddingVertical: 12, alignItems: 'center', marginTop: 16 },
   signOutText: { color: colors.accent, fontSize: 11, fontWeight: '900', letterSpacing: 4 },
   version: { textAlign: 'center', color: colors.textDim, fontSize: 9, letterSpacing: 3 },
 })

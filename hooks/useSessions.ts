@@ -67,6 +67,7 @@ export function useSession(id: string) {
           )
         `)
         .eq('id', id)
+        .order('set_number', { foreignTable: 'session_sets' })
         .single()
       if (error) throw error
       return data
@@ -94,7 +95,7 @@ export function useCreateSession() {
         .single()
       if (error) throw error
 
-      // Se c'è un template, pre-carico gli esercizi con set vuoti (weight=0)
+      // Se c'è un template, cerco l'ultimo allenamento con lo stesso template
       if (input.template_id) {
         const { data: templateExercises } = await supabase
           .from('template_exercises')
@@ -103,16 +104,54 @@ export function useCreateSession() {
           .order('position')
 
         if (templateExercises && templateExercises.length > 0) {
-          const sets = templateExercises.flatMap(te =>
-            Array.from({ length: te.target_sets }, (_, i) => ({
-              session_id: session.id,
-              exercise_id: te.exercise_id,
-              set_number: i + 1,
-              weight: 0,
-              reps: te.target_reps,
-            }))
-          )
-          await supabase.from('session_sets').insert(sets)
+          // Cerco l'ultimo allenamento con lo stesso template
+          const { data: lastSessions } = await supabase
+            .from('sessions')
+            .select('id')
+            .eq('template_id', input.template_id)
+            .neq('id', session.id)
+            .order('date', { ascending: false })
+            .limit(1)
+
+          let sets
+          if (lastSessions && lastSessions.length > 0) {
+            // Prendo i set dall'ultimo allenamento
+            const { data: lastSessionSets } = await supabase
+              .from('session_sets')
+              .select('*')
+              .eq('session_id', lastSessions[0].id)
+              .order('set_number')
+
+            sets = templateExercises.flatMap(te => {
+              const exerciseSets = lastSessionSets?.filter(ss => ss.exercise_id === te.exercise_id) ?? []
+              const numSets = exerciseSets.length > 0 ? exerciseSets.length : te.target_sets
+              return Array.from({ length: numSets }, (_, i) => {
+                const lastSet = exerciseSets[i]
+                return {
+                  session_id: session.id,
+                  exercise_id: te.exercise_id,
+                  set_number: i + 1,
+                  weight: lastSet?.weight ?? 0,
+                  reps: lastSet?.reps ?? te.target_reps,
+                }
+              })
+            })
+          } else {
+            // Se non c'è un allenamento precedente, uso i target del template
+            sets = templateExercises.flatMap(te =>
+              Array.from({ length: te.target_sets }, (_, i) => ({
+                session_id: session.id,
+                exercise_id: te.exercise_id,
+                set_number: i + 1,
+                weight: 0,
+                reps: te.target_reps,
+              }))
+            )
+          }
+
+          if (sets.length > 0) {
+            await supabase.from('session_sets').insert(sets)
+          }
         }
       }
 

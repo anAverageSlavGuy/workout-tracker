@@ -45,7 +45,17 @@ export default function SessionScreen() {
       if (!map[s.exercise_id]) map[s.exercise_id] = { exercise: s.exercises, sets: [] }
       map[s.exercise_id].sets.push(s)
     }
-    return Object.values(map)
+    // Ordina i set per set_number e gli esercizi per il primo set di ogni esercizio
+    const result = Object.values(map)
+    result.forEach(group => {
+      group.sets.sort((a, b) => a.set_number - b.set_number)
+    })
+    result.sort((a, b) => {
+      const aMin = Math.min(...a.sets.map(s => s.set_number))
+      const bMin = Math.min(...b.sets.map(s => s.set_number))
+      return aMin - bMin
+    })
+    return result
   }, [session])
 
   function handleBack() {
@@ -202,34 +212,34 @@ export default function SessionScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   loading: { flex: 1, backgroundColor: colors.bg, justifyContent: 'center', alignItems: 'center' },
-  header: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 12 },
-  backBtn: { padding: 6 },
+  header: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 8 },
+  backBtn: { padding: 8 },
   backChar: { color: colors.textMuted, fontSize: 20 },
   headerTitle: { fontSize: 13, fontWeight: '900', color: colors.text, letterSpacing: 4 },
-  headerDate: { fontSize: 10, color: colors.textMuted, letterSpacing: 2, textTransform: 'capitalize', marginTop: 2 },
+  headerDate: { fontSize: 10, color: colors.textMuted, letterSpacing: 2, textTransform: 'capitalize', marginTop: 4 },
   addExBtn: { borderWidth: 1, borderColor: colors.accent, paddingHorizontal: 12, paddingVertical: 8 },
   addExBtnText: { fontSize: 10, fontWeight: '900', color: colors.accent, letterSpacing: 2 },
   headerDivider: { height: 1, backgroundColor: colors.border },
   scroll: { flex: 1 },
   content: { padding: 16, gap: 16, paddingBottom: 40 },
   exerciseGroup: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
-  exerciseHeader: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12, borderBottomWidth: 1, borderBottomColor: colors.border },
+  exerciseHeader: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 12, borderBottomWidth: 1, borderBottomColor: colors.border },
   exAccentBar: { width: 3, height: 36, backgroundColor: colors.accent },
   exerciseName: { fontSize: 13, fontWeight: '900', color: colors.text, letterSpacing: 2 },
-  equipment: { fontSize: 10, color: colors.textMuted, marginTop: 3, letterSpacing: 1 },
+  equipment: { fontSize: 10, color: colors.textMuted, marginTop: 4, letterSpacing: 1 },
   setCount: { fontSize: 9, color: colors.textMuted, letterSpacing: 2 },
-  setHeaders: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 6, backgroundColor: colors.bg },
+  setHeaders: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 8, backgroundColor: colors.bg },
   setHeaderText: { fontSize: 9, color: colors.textDim, fontWeight: '700', letterSpacing: 2 },
-  addSetRow: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, backgroundColor: colors.bg, borderTopWidth: 1, borderTopColor: colors.border },
+  addSetRow: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 16, backgroundColor: colors.bg, borderTopWidth: 1, borderTopColor: colors.border },
   addSetInput: {
-    backgroundColor: colors.surface, color: colors.text, paddingHorizontal: 10, paddingVertical: 8,
+    backgroundColor: colors.surface, color: colors.text, paddingHorizontal: 8, paddingVertical: 8,
     fontSize: 15, width: 68, borderWidth: 1, borderColor: colors.border, textAlign: 'center',
   },
   addSetUnit: { fontSize: 11, color: colors.textMuted },
-  addSetCross: { fontSize: 11, color: colors.textDim, marginHorizontal: 2 },
-  addSetBtn: { flex: 1, borderWidth: 1, borderColor: colors.accent, paddingVertical: 9, alignItems: 'center' },
+  addSetCross: { fontSize: 11, color: colors.textDim, marginHorizontal: 8 },
+  addSetBtn: { flex: 1, borderWidth: 1, borderColor: colors.accent, paddingVertical: 8, alignItems: 'center' },
   addSetBtnText: { fontSize: 11, fontWeight: '900', color: colors.accent, letterSpacing: 3 },
-  emptyState: { alignItems: 'center', paddingVertical: 60, gap: 12 },
+  emptyState: { alignItems: 'center', paddingVertical: 60, gap: 16 },
   emptyOrnament: { color: colors.accent, fontSize: 24 },
   emptyTitle: { fontSize: 16, fontWeight: '900', color: colors.text, letterSpacing: 6 },
   emptyText: { fontSize: 13, color: colors.textMuted, letterSpacing: 1 },
