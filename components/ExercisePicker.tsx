@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, Modal } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Ionicons } from '@expo/vector-icons'
 import { useExercises } from '../hooks/useExercises'
 import { Exercise } from '../lib/types'
 import { colors } from '../constants/colors'
@@ -34,18 +33,19 @@ export function ExercisePicker({ visible, onClose, onSelect }: Props) {
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <SafeAreaView style={styles.safe}>
         <View style={styles.header}>
-          <Text style={styles.title}>Aggiungi esercizio</Text>
+          <Text style={styles.title}>AGGIUNGI ESERCIZIO</Text>
           <TouchableOpacity onPress={onClose}>
-            <Ionicons name="close" size={24} color={colors.text} />
+            <Text style={styles.closeText}>✕</Text>
           </TouchableOpacity>
         </View>
+        <View style={styles.divider} />
 
         <View style={styles.searchWrap}>
-          <Ionicons name="search" size={16} color={colors.textMuted} />
+          <Text style={styles.searchIcon}>⌕</Text>
           <TextInput
             style={styles.search}
-            placeholder="Cerca esercizio..."
-            placeholderTextColor={colors.textMuted}
+            placeholder="cerca esercizio..."
+            placeholderTextColor={colors.textDim}
             value={search}
             onChangeText={setSearch}
             autoFocus
@@ -57,14 +57,18 @@ export function ExercisePicker({ visible, onClose, onSelect }: Props) {
           keyExtractor={([group]) => group}
           renderItem={({ item: [group, exs] }) => (
             <View>
-              <Text style={styles.groupLabel}>{group}</Text>
+              <View style={styles.groupHeader}>
+                <View style={styles.groupDot} />
+                <Text style={styles.groupLabel}>{group.toUpperCase()}</Text>
+              </View>
               {exs.map(ex => (
                 <TouchableOpacity key={ex.id} style={styles.exRow} onPress={() => { onSelect(ex); onClose() }}>
+                  <View style={styles.exAccent} />
                   <View style={{ flex: 1 }}>
                     <Text style={styles.exName}>{ex.name}</Text>
                     {ex.equipment && <Text style={styles.exEquip}>{ex.equipment}</Text>}
                   </View>
-                  <Ionicons name="add-circle-outline" size={20} color={colors.accent} />
+                  <Text style={styles.addChar}>+</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -77,12 +81,19 @@ export function ExercisePicker({ visible, onClose, onSelect }: Props) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, paddingBottom: 12 },
-  title: { fontSize: 20, fontWeight: '800', color: colors.text },
-  searchWrap: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 16, marginBottom: 8, backgroundColor: colors.surface, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, borderWidth: 1, borderColor: colors.border },
-  search: { flex: 1, color: colors.text, fontSize: 15 },
-  groupLabel: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 4, fontSize: 11, fontWeight: '700', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 1 },
-  exRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: colors.border },
-  exName: { fontSize: 15, color: colors.text, fontWeight: '500' },
-  exEquip: { fontSize: 12, color: colors.textMuted, marginTop: 2 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20 },
+  title: { fontSize: 14, fontWeight: '900', color: colors.text, letterSpacing: 5 },
+  closeText: { color: colors.textMuted, fontSize: 16 },
+  divider: { height: 1, backgroundColor: colors.border },
+  searchWrap: { flexDirection: 'row', alignItems: 'center', gap: 10, margin: 16, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: colors.surface },
+  searchIcon: { color: colors.textMuted, fontSize: 18 },
+  search: { flex: 1, color: colors.text, fontSize: 14 },
+  groupHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 },
+  groupDot: { width: 4, height: 4, backgroundColor: colors.accent, transform: [{ rotate: '45deg' }] },
+  groupLabel: { fontSize: 9, fontWeight: '700', color: colors.accent, letterSpacing: 4 },
+  exRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 13, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: colors.border, gap: 12 },
+  exAccent: { width: 2, height: 28, backgroundColor: colors.border },
+  exName: { fontSize: 14, color: colors.text },
+  exEquip: { fontSize: 11, color: colors.textMuted, marginTop: 2 },
+  addChar: { color: colors.accent, fontSize: 20, fontWeight: '300' },
 })

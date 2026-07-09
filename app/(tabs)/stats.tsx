@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, FlatList } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { VictoryChart, VictoryLine, VictoryBar, VictoryAxis, VictoryTheme } from 'victory-native'
-import { subDays, format, startOfWeek, eachWeekOfInterval, subWeeks } from 'date-fns'
+import { subDays, format, eachWeekOfInterval, subWeeks } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { useSessions } from '../../hooks/useSessions'
 import { useExercises } from '../../hooks/useExercises'
@@ -10,6 +10,19 @@ import { colors } from '../../constants/colors'
 import { epley1RM, Exercise } from '../../lib/types'
 
 type StatTab = 'progressione' | 'frequenza' | 'volume'
+
+const chartTheme = {
+  ...VictoryTheme.material,
+  axis: {
+    ...VictoryTheme.material.axis,
+    style: {
+      axis: { stroke: colors.border },
+      grid: { stroke: colors.border, strokeDasharray: '4,4', strokeOpacity: 0.4 },
+      ticks: { stroke: 'transparent' },
+      tickLabels: { fill: colors.textMuted, fontSize: 9, fontFamily: 'monospace' },
+    },
+  },
+}
 
 export default function StatsScreen() {
   const [tab, setTab] = useState<StatTab>('progressione')
@@ -20,12 +33,11 @@ export default function StatsScreen() {
   const { data: exercises = [] } = useExercises()
 
   const tabs: { key: StatTab; label: string }[] = [
-    { key: 'progressione', label: 'Progressione' },
-    { key: 'frequenza', label: 'Frequenza' },
-    { key: 'volume', label: 'Volume' },
+    { key: 'progressione', label: 'PROGRESSO' },
+    { key: 'frequenza', label: 'FREQUENZA' },
+    { key: 'volume', label: 'VOLUME' },
   ]
 
-  // Progressione: 1RM stimato per esercizio selezionato
   const progressionData = selectedExercise
     ? sessions
         .flatMap(s => (s.session_sets ?? [])
@@ -40,7 +52,6 @@ export default function StatsScreen() {
         }, [])
     : []
 
-  // Frequenza: sessioni per settimana (ultime 12)
   const weeklyData = (() => {
     const weeks = eachWeekOfInterval(
       { start: subWeeks(new Date(), 11), end: new Date() },
@@ -57,7 +68,6 @@ export default function StatsScreen() {
     })
   })()
 
-  // Volume per gruppo muscolare (ultimi 30 giorni)
   const from30 = subDays(new Date(), 30).toISOString().split('T')[0]
   const volumeByMuscle = sessions
     .filter(s => s.date >= from30)
@@ -78,7 +88,12 @@ export default function StatsScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView style={styles.scroll}>
-        <Text style={styles.title}>Statistiche</Text>
+        <View style={styles.headerWrap}>
+          <View style={styles.ornamentRow}>
+            <View style={styles.line} /><Text style={styles.ornamentChar}>✦</Text><View style={styles.line} />
+          </View>
+          <Text style={styles.title}>STATISTICHE</Text>
+        </View>
 
         <View style={styles.tabBar}>
           {tabs.map(t => (
@@ -95,35 +110,38 @@ export default function StatsScreen() {
         {tab === 'progressione' && (
           <View style={styles.section}>
             <TouchableOpacity style={styles.picker} onPress={() => setShowPicker(true)}>
-              <Text style={styles.pickerText}>{selectedExercise?.name ?? 'Seleziona esercizio'}</Text>
+              <Text style={styles.pickerLabel}>ESERCIZIO</Text>
+              <Text style={styles.pickerText}>{selectedExercise?.name ?? '— seleziona —'}</Text>
             </TouchableOpacity>
             {progressionData.length > 1 ? (
               <>
-                <Text style={styles.chartLabel}>1RM stimato (kg)</Text>
-                <VictoryChart theme={VictoryTheme.material} height={240} padding={{ left: 55, right: 24, top: 16, bottom: 40 }}>
+                <Text style={styles.chartLabel}>1RM STIMATO (kg) — Formula Epley</Text>
+                <VictoryChart theme={chartTheme} height={240} padding={{ left: 55, right: 24, top: 16, bottom: 40 }}>
                   <VictoryAxis
                     tickFormat={(t: string, i: number) => i % 2 === 0 ? format(new Date(t), 'dd/MM') : ''}
-                    style={{ tickLabels: { fill: colors.textMuted, fontSize: 10 }, axis: { stroke: colors.border } }}
                   />
-                  <VictoryAxis dependentAxis style={{ tickLabels: { fill: colors.textMuted, fontSize: 10 }, axis: { stroke: colors.border } }} />
-                  <VictoryLine data={progressionData} style={{ data: { stroke: colors.accent, strokeWidth: 2 } }} />
+                  <VictoryAxis dependentAxis />
+                  <VictoryLine
+                    data={progressionData}
+                    style={{ data: { stroke: colors.accent, strokeWidth: 2 } }}
+                  />
                 </VictoryChart>
               </>
             ) : (
-              <Text style={styles.empty}>{selectedExercise ? 'Dati insufficienti' : 'Seleziona un esercizio'}</Text>
+              <Text style={styles.empty}>{selectedExercise ? 'Dati insufficienti' : 'Seleziona un esercizio per vedere il grafico'}</Text>
             )}
           </View>
         )}
 
         {tab === 'frequenza' && (
           <View style={styles.section}>
-            <Text style={styles.chartLabel}>Sessioni per settimana (ultime 12)</Text>
-            <VictoryChart theme={VictoryTheme.material} height={240} padding={{ left: 44, right: 16, top: 16, bottom: 48 }}>
+            <Text style={styles.chartLabel}>SESSIONI PER SETTIMANA — ultime 12</Text>
+            <VictoryChart theme={chartTheme} height={240} padding={{ left: 44, right: 16, top: 16, bottom: 48 }}>
               <VictoryAxis
                 tickFormat={(_: unknown, i: number) => i % 3 === 0 ? (weeklyData[i]?.x ?? '') : ''}
-                style={{ tickLabels: { fill: colors.textMuted, fontSize: 9, angle: -30 }, axis: { stroke: colors.border } }}
+                style={{ tickLabels: { angle: -30, fontSize: 9, fill: colors.textMuted } }}
               />
-              <VictoryAxis dependentAxis style={{ tickLabels: { fill: colors.textMuted, fontSize: 10 }, axis: { stroke: colors.border } }} />
+              <VictoryAxis dependentAxis />
               <VictoryBar data={weeklyData} style={{ data: { fill: colors.accent } }} barWidth={14} />
             </VictoryChart>
           </View>
@@ -131,11 +149,11 @@ export default function StatsScreen() {
 
         {tab === 'volume' && (
           <View style={styles.section}>
-            <Text style={styles.chartLabel}>Volume per gruppo muscolare — ultimi 30 giorni (kg × reps)</Text>
+            <Text style={styles.chartLabel}>VOLUME PER GRUPPO — ultimi 30 giorni</Text>
             {volumeData.length > 0 ? (
-              <VictoryChart theme={VictoryTheme.material} height={280} padding={{ left: 55, right: 16, top: 16, bottom: 40 }}>
-                <VictoryAxis style={{ tickLabels: { fill: colors.textMuted, fontSize: 10 }, axis: { stroke: colors.border } }} />
-                <VictoryAxis dependentAxis style={{ tickLabels: { fill: colors.textMuted, fontSize: 9 }, axis: { stroke: colors.border } }} />
+              <VictoryChart theme={chartTheme} height={280} padding={{ left: 55, right: 16, top: 16, bottom: 40 }}>
+                <VictoryAxis style={{ tickLabels: { fontSize: 9, fill: colors.textMuted } }} />
+                <VictoryAxis dependentAxis style={{ tickLabels: { fontSize: 9, fill: colors.textMuted } }} />
                 <VictoryBar horizontal data={volumeData} style={{ data: { fill: colors.accent } }} barWidth={18} />
               </VictoryChart>
             ) : (
@@ -148,18 +166,23 @@ export default function StatsScreen() {
       <Modal visible={showPicker} animationType="slide" onRequestClose={() => setShowPicker(false)}>
         <SafeAreaView style={styles.pickerModal}>
           <View style={styles.pickerHeader}>
-            <Text style={styles.pickerTitle}>Seleziona esercizio</Text>
+            <Text style={styles.pickerTitle}>SELEZIONA ESERCIZIO</Text>
             <TouchableOpacity onPress={() => setShowPicker(false)}>
-              <Text style={{ color: colors.accent, fontSize: 16 }}>Chiudi</Text>
+              <Text style={{ color: colors.accent, fontSize: 13, letterSpacing: 2 }}>CHIUDI</Text>
             </TouchableOpacity>
           </View>
+          <View style={{ height: 1, backgroundColor: colors.border }} />
           <FlatList
             data={exercises}
             keyExtractor={e => e.id}
+            ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: colors.border }} />}
             renderItem={({ item }) => (
               <TouchableOpacity style={styles.pickerRow} onPress={() => { setSelectedExercise(item); setShowPicker(false) }}>
-                <Text style={styles.pickerRowText}>{item.name}</Text>
-                {item.equipment && <Text style={styles.pickerRowSub}>{item.equipment}</Text>}
+                <View style={styles.pickerDot} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.pickerRowText}>{item.name}</Text>
+                  {item.equipment && <Text style={styles.pickerRowSub}>{item.equipment}</Text>}
+                </View>
               </TouchableOpacity>
             )}
           />
@@ -172,24 +195,27 @@ export default function StatsScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   scroll: { flex: 1 },
-  title: { fontSize: 28, fontWeight: '800', color: colors.text, padding: 20, paddingBottom: 12 },
-  tabBar: { flexDirection: 'row', marginHorizontal: 20, backgroundColor: colors.surface, borderRadius: 10, padding: 4, marginBottom: 16 },
-  tabBtn: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 8 },
-  tabActive: { backgroundColor: colors.surfaceHigh },
-  tabText: { fontSize: 13, color: colors.textMuted, fontWeight: '500' },
-  tabTextActive: { color: colors.accent, fontWeight: '700' },
-  section: { paddingHorizontal: 16 },
-  chartLabel: { fontSize: 12, color: colors.textMuted, marginBottom: 4 },
-  picker: {
-    backgroundColor: colors.surface, borderRadius: 10, paddingHorizontal: 16,
-    paddingVertical: 12, marginBottom: 16, borderWidth: 1, borderColor: colors.border,
-  },
-  pickerText: { color: colors.text, fontSize: 15 },
-  empty: { textAlign: 'center', color: colors.textMuted, marginTop: 40, paddingBottom: 40 },
+  headerWrap: { paddingHorizontal: 24, paddingTop: 20, paddingBottom: 12, gap: 8 },
+  ornamentRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  line: { flex: 1, height: 1, backgroundColor: colors.border },
+  ornamentChar: { color: colors.accent, fontSize: 12 },
+  title: { fontSize: 28, fontWeight: '900', color: colors.text, letterSpacing: 8 },
+  tabBar: { flexDirection: 'row', borderTopWidth: 1, borderBottomWidth: 1, borderColor: colors.border, marginBottom: 20 },
+  tabBtn: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRightWidth: 1, borderRightColor: colors.border },
+  tabActive: { backgroundColor: colors.accentDim },
+  tabText: { fontSize: 9, color: colors.textMuted, letterSpacing: 3, fontWeight: '700' },
+  tabTextActive: { color: colors.accent },
+  section: { paddingHorizontal: 16, paddingBottom: 32 },
+  chartLabel: { fontSize: 9, color: colors.textMuted, letterSpacing: 3, marginBottom: 8, marginTop: 4 },
+  picker: { borderWidth: 1, borderColor: colors.border, padding: 14, marginBottom: 16, backgroundColor: colors.surface },
+  pickerLabel: { fontSize: 9, color: colors.textMuted, letterSpacing: 3, marginBottom: 4 },
+  pickerText: { color: colors.text, fontSize: 14 },
+  empty: { textAlign: 'center', color: colors.textMuted, marginTop: 40, paddingBottom: 40, letterSpacing: 2, fontSize: 12 },
   pickerModal: { flex: 1, backgroundColor: colors.bg },
-  pickerHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: colors.border },
-  pickerTitle: { fontSize: 18, fontWeight: '700', color: colors.text },
-  pickerRow: { paddingVertical: 14, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: colors.border },
-  pickerRowText: { fontSize: 15, color: colors.text, fontWeight: '500' },
-  pickerRowSub: { fontSize: 12, color: colors.textMuted, marginTop: 2 },
+  pickerHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20 },
+  pickerTitle: { fontSize: 14, fontWeight: '900', color: colors.text, letterSpacing: 5 },
+  pickerRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 20, gap: 14 },
+  pickerDot: { width: 4, height: 4, backgroundColor: colors.accent, transform: [{ rotate: '45deg' }] },
+  pickerRowText: { fontSize: 14, color: colors.text },
+  pickerRowSub: { fontSize: 11, color: colors.textMuted, marginTop: 2 },
 })

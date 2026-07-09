@@ -45,8 +45,21 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.inner}>
-        <Text style={styles.title}>WORKOUT</Text>
-        <Text style={styles.subtitle}>Traccia i tuoi progressi</Text>
+        {/* Decorative lines */}
+        <View style={styles.ornamentTop}>
+          <View style={styles.ornamentLine} />
+          <View style={styles.ornamentDiamond} />
+          <View style={styles.ornamentLine} />
+        </View>
+
+        <Text style={styles.title}>IRON{'\n'}RITE</Text>
+        <Text style={styles.subtitle}>track your ascension</Text>
+
+        <View style={styles.ornamentMid}>
+          <View style={[styles.ornamentLine, { flex: 1 }]} />
+          <Text style={styles.ornamentChar}>✦</Text>
+          <View style={[styles.ornamentLine, { flex: 1 }]} />
+        </View>
 
         <View style={styles.tabs}>
           <TouchableOpacity
@@ -66,7 +79,7 @@ export default function LoginScreen() {
         <TextInput
           style={styles.input}
           placeholder="Email"
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={colors.textDim}
           autoCapitalize="none"
           keyboardType="email-address"
           value={email}
@@ -75,7 +88,7 @@ export default function LoginScreen() {
         <TextInput
           style={styles.input}
           placeholder="Password"
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={colors.textDim}
           secureTextEntry
           value={password}
           onChangeText={setPassword}
@@ -87,8 +100,8 @@ export default function LoginScreen() {
           disabled={loading}
         >
           {loading
-            ? <ActivityIndicator color={colors.bg} />
-            : <Text style={styles.primaryBtnText}>{tab === 'login' ? 'Accedi' : 'Registrati'}</Text>
+            ? <ActivityIndicator color={colors.text} />
+            : <Text style={styles.primaryBtnText}>{tab === 'login' ? 'ACCEDI' : 'REGISTRATI'}</Text>
           }
         </TouchableOpacity>
 
@@ -97,6 +110,12 @@ export default function LoginScreen() {
             <Text style={styles.forgotText}>Password dimenticata?</Text>
           </TouchableOpacity>
         )}
+
+        <View style={styles.ornamentBottom}>
+          <View style={styles.ornamentLine} />
+          <View style={styles.ornamentDiamond} />
+          <View style={styles.ornamentLine} />
+        </View>
       </View>
     </KeyboardAvoidingView>
   )
@@ -104,22 +123,33 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg, justifyContent: 'center' },
-  inner: { paddingHorizontal: 28, gap: 12 },
-  title: { fontSize: 36, fontWeight: '900', color: colors.accent, letterSpacing: 4, textAlign: 'center', marginBottom: 4 },
-  subtitle: { fontSize: 14, color: colors.textMuted, textAlign: 'center', marginBottom: 16 },
-  tabs: { flexDirection: 'row', backgroundColor: colors.surface, borderRadius: 10, padding: 4, marginBottom: 8 },
-  tabBtn: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 8 },
-  tabActive: { backgroundColor: colors.surfaceHigh },
-  tabText: { fontSize: 14, fontWeight: '600', color: colors.textMuted },
-  tabTextActive: { color: colors.text },
+  inner: { paddingHorizontal: 32, gap: 14 },
+  ornamentTop: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  ornamentBottom: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
+  ornamentMid: { flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 2 },
+  ornamentLine: { height: 1, backgroundColor: colors.border, flex: 1 },
+  ornamentDiamond: { width: 6, height: 6, backgroundColor: colors.accent, transform: [{ rotate: '45deg' }] },
+  ornamentChar: { color: colors.accent, fontSize: 12 },
+  title: {
+    fontSize: 42, fontWeight: '900', color: colors.text,
+    letterSpacing: 8, textAlign: 'center', lineHeight: 46,
+    textShadowColor: colors.accent, textShadowRadius: 12, textShadowOffset: { width: 0, height: 0 },
+  },
+  subtitle: { fontSize: 11, color: colors.textMuted, textAlign: 'center', letterSpacing: 5, textTransform: 'uppercase', marginTop: -6 },
+  tabs: { flexDirection: 'row', backgroundColor: colors.surface, borderRadius: 2, borderWidth: 1, borderColor: colors.border },
+  tabBtn: { flex: 1, paddingVertical: 11, alignItems: 'center' },
+  tabActive: { backgroundColor: colors.accentDim, borderWidth: 0 },
+  tabText: { fontSize: 13, fontWeight: '600', color: colors.textMuted, letterSpacing: 2, textTransform: 'uppercase' },
+  tabTextActive: { color: colors.accent },
   input: {
-    backgroundColor: colors.surface, color: colors.text, borderRadius: 10,
-    paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, borderWidth: 1, borderColor: colors.border,
+    backgroundColor: colors.surface, color: colors.text, borderRadius: 2,
+    paddingHorizontal: 16, paddingVertical: 14, fontSize: 15,
+    borderWidth: 1, borderColor: colors.border, letterSpacing: 1,
   },
   primaryBtn: {
-    backgroundColor: colors.accent, borderRadius: 10, paddingVertical: 16,
-    alignItems: 'center', marginTop: 4,
+    backgroundColor: colors.accent, borderRadius: 2, paddingVertical: 16,
+    alignItems: 'center', marginTop: 2,
   },
-  primaryBtnText: { fontSize: 16, fontWeight: '700', color: colors.bg },
-  forgotText: { textAlign: 'center', color: colors.textMuted, fontSize: 13, marginTop: 4 },
+  primaryBtnText: { fontSize: 13, fontWeight: '900', color: colors.text, letterSpacing: 4 },
+  forgotText: { textAlign: 'center', color: colors.textMuted, fontSize: 12, marginTop: -4, letterSpacing: 1 },
 })

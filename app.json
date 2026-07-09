@@ -19,13 +19,13 @@
     "web": {
       "bundler": "metro",
       "favicon": "./assets/favicon.png",
-      "output": "static",
+      "output": "single",
       "manifest": {
         "name": "Workout Tracker",
         "short_name": "Workout",
         "description": "Traccia i tuoi allenamenti e la progressione dei carichi",
-        "theme_color": "#0a0a0a",
-        "background_color": "#0a0a0a",
+        "theme_color": "#07000a",
+        "background_color": "#07000a",
         "display": "standalone",
         "orientation": "portrait"
       }

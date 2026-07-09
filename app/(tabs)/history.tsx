@@ -1,7 +1,5 @@
 import { useState } from 'react'
-import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity, ScrollView,
-} from 'react-native'
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ScrollView } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { format } from 'date-fns'
@@ -23,21 +21,29 @@ export default function HistoryScreen() {
     const exercises = [...new Set(item.session_sets?.map(s => s.exercises?.name))].filter(Boolean)
     return (
       <TouchableOpacity style={styles.card} onPress={() => router.push(`/session/${item.id}`)}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardDate}>{format(new Date(item.date), 'EEE d MMM', { locale: it })}</Text>
-          <Text style={styles.cardSets}>{item.session_sets?.length ?? 0} set</Text>
+        <View style={styles.cardLeft}>
+          <Text style={styles.cardDay}>{format(new Date(item.date), 'dd', { locale: it })}</Text>
+          <Text style={styles.cardMonth}>{format(new Date(item.date), 'MMM', { locale: it }).toUpperCase()}</Text>
         </View>
-        <Text style={styles.cardExercises} numberOfLines={2}>
-          {exercises.slice(0, 4).join(' · ') || 'Nessun esercizio'}
-        </Text>
+        <View style={styles.cardDivider} />
+        <View style={styles.cardRight}>
+          <Text style={styles.cardExercises} numberOfLines={1}>
+            {exercises.slice(0, 3).join(' · ') || 'Nessun esercizio'}
+          </Text>
+          <Text style={styles.cardSets}>{item.session_sets?.length ?? 0} SET</Text>
+        </View>
+        <View style={styles.cardArrow}><Text style={{ color: colors.accent, fontSize: 16 }}>›</Text></View>
       </TouchableOpacity>
     )
   }
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Storico</Text>
+      <View style={styles.headerWrap}>
+        <View style={styles.ornamentRow}>
+          <View style={styles.line} /><Text style={styles.ornamentChar}>✦</Text><View style={styles.line} />
+        </View>
+        <Text style={styles.title}>STORICO</Text>
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll} contentContainerStyle={styles.filterContent}>
@@ -45,7 +51,7 @@ export default function HistoryScreen() {
           style={[styles.chip, !selectedMuscle && styles.chipActive]}
           onPress={() => setSelectedMuscle(null)}
         >
-          <Text style={[styles.chipText, !selectedMuscle && styles.chipTextActive]}>Tutti</Text>
+          <Text style={[styles.chipText, !selectedMuscle && styles.chipTextActive]}>TUTTI</Text>
         </TouchableOpacity>
         {muscleGroups.map(mg => (
           <TouchableOpacity
@@ -53,7 +59,7 @@ export default function HistoryScreen() {
             style={[styles.chip, selectedMuscle === mg.id && styles.chipActive]}
             onPress={() => setSelectedMuscle(selectedMuscle === mg.id ? null : mg.id)}
           >
-            <Text style={[styles.chipText, selectedMuscle === mg.id && styles.chipTextActive]}>{mg.name}</Text>
+            <Text style={[styles.chipText, selectedMuscle === mg.id && styles.chipTextActive]}>{mg.name.toUpperCase()}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -63,8 +69,9 @@ export default function HistoryScreen() {
         keyExtractor={s => s.id}
         renderItem={renderSession}
         contentContainerStyle={styles.list}
+        ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: colors.border }} />}
         ListEmptyComponent={
-          <Text style={styles.empty}>{isLoading ? 'Caricamento...' : 'Nessun allenamento trovato'}</Text>
+          <Text style={styles.empty}>{isLoading ? '...' : 'Nessun allenamento trovato'}</Text>
         }
       />
     </SafeAreaView>
@@ -73,22 +80,26 @@ export default function HistoryScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
-  title: { fontSize: 28, fontWeight: '800', color: colors.text },
-  filterScroll: { maxHeight: 48 },
-  filterContent: { paddingHorizontal: 20, gap: 8, alignItems: 'center' },
-  chip: {
-    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
-    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border,
-  },
+  headerWrap: { paddingHorizontal: 24, paddingTop: 20, paddingBottom: 12, gap: 8 },
+  ornamentRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  line: { flex: 1, height: 1, backgroundColor: colors.border },
+  ornamentChar: { color: colors.accent, fontSize: 12 },
+  title: { fontSize: 28, fontWeight: '900', color: colors.text, letterSpacing: 8 },
+  filterScroll: { maxHeight: 46, borderBottomWidth: 1, borderBottomColor: colors.border },
+  filterContent: { paddingHorizontal: 16, gap: 6, alignItems: 'center', paddingVertical: 6 },
+  chip: { paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: colors.border },
   chipActive: { backgroundColor: colors.accentDim, borderColor: colors.accent },
-  chipText: { fontSize: 13, color: colors.textMuted, fontWeight: '500' },
+  chipText: { fontSize: 9, color: colors.textMuted, letterSpacing: 2, fontWeight: '700' },
   chipTextActive: { color: colors.accent },
-  list: { padding: 16, gap: 10 },
-  card: { backgroundColor: colors.surface, borderRadius: 12, padding: 16, gap: 6 },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  cardDate: { fontSize: 15, fontWeight: '700', color: colors.text, textTransform: 'capitalize' },
-  cardSets: { fontSize: 12, color: colors.textMuted },
-  cardExercises: { fontSize: 13, color: colors.textMuted },
-  empty: { textAlign: 'center', color: colors.textMuted, marginTop: 60 },
+  list: { paddingVertical: 0 },
+  card: { flexDirection: 'row', alignItems: 'center', paddingVertical: 16, paddingHorizontal: 20, gap: 16, backgroundColor: colors.bg },
+  cardLeft: { alignItems: 'center', width: 36 },
+  cardDay: { fontSize: 22, fontWeight: '900', color: colors.accent, lineHeight: 24 },
+  cardMonth: { fontSize: 9, color: colors.textMuted, letterSpacing: 2 },
+  cardDivider: { width: 1, height: 36, backgroundColor: colors.border },
+  cardRight: { flex: 1, gap: 4 },
+  cardExercises: { fontSize: 13, color: colors.text, fontWeight: '500' },
+  cardSets: { fontSize: 9, color: colors.textMuted, letterSpacing: 2 },
+  cardArrow: { paddingLeft: 4 },
+  empty: { textAlign: 'center', color: colors.textMuted, marginTop: 60, letterSpacing: 2 },
 })
