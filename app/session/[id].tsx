@@ -50,10 +50,11 @@ export default function SessionScreen() {
 
   function handleBack() {
     const goBack = () => {
-      if (Platform.OS === 'web') {
-        window.history.back()
-      } else {
+      // Modal non crea history entry, naviga manualmente verso tabs
+      if (router.canGoBack?.()) {
         router.back()
+      } else {
+        router.replace('/(tabs)')
       }
     }
 
