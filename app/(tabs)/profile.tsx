@@ -1,17 +1,31 @@
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native'
+import { useState } from 'react'
+import { View, Text, TouchableOpacity, StyleSheet, Alert, Platform, ActivityIndicator } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useRouter } from 'expo-router'
 import { useAuth } from '../../lib/auth'
 import { supabase } from '../../lib/supabase'
 import { colors } from '../../constants/colors'
 
 export default function ProfileScreen() {
   const { user } = useAuth()
+  const router = useRouter()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   async function handleSignOut() {
-    Alert.alert('Esci', 'Vuoi uscire?', [
-      { text: 'Annulla', style: 'cancel' },
-      { text: 'Esci', style: 'destructive', onPress: () => supabase.auth.signOut() },
-    ])
+    const confirmed = Platform.OS === 'web'
+      ? window.confirm('Sei sicuro di voler uscire?')
+      : await new Promise(resolve => {
+          Alert.alert('Esci', 'Vuoi uscire?', [
+            { text: 'Annulla', style: 'cancel', onPress: () => resolve(false) },
+            { text: 'Esci', style: 'destructive', onPress: () => resolve(true) },
+          ])
+        })
+
+    if (confirmed) {
+      setIsLoggingOut(true)
+      await supabase.auth.signOut()
+      router.replace('/(auth)/login')
+    }
   }
 
   return (
@@ -30,8 +44,11 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <TouchableOpacity style={styles.signOutBtn} onPress={handleSignOut}>
-          <Text style={styles.signOutText}>ESCI</Text>
+        <TouchableOpacity style={[styles.signOutBtn, isLoggingOut && styles.signOutBtnDisabled]} onPress={handleSignOut} disabled={isLoggingOut}>
+          {isLoggingOut
+            ? <ActivityIndicator color={colors.accent} />
+            : <Text style={styles.signOutText}>ESCI</Text>
+          }
         </TouchableOpacity>
 
         <View style={{ flex: 1 }} />
@@ -57,6 +74,7 @@ const styles = StyleSheet.create({
   label: { fontSize: 9, color: colors.textMuted, letterSpacing: 3, marginBottom: 8 },
   value: { fontSize: 15, color: colors.text },
   signOutBtn: { borderWidth: 1, borderColor: colors.accent, paddingVertical: 12, alignItems: 'center', marginTop: 16 },
+  signOutBtnDisabled: { opacity: 0.5 },
   signOutText: { color: colors.accent, fontSize: 11, fontWeight: '900', letterSpacing: 4 },
   version: { textAlign: 'center', color: colors.textDim, fontSize: 9, letterSpacing: 3 },
 })
