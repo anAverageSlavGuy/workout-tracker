@@ -50,11 +50,21 @@ export default function SessionScreen() {
 
   function handleBack() {
     const goBack = () => {
-      // Modal non crea history entry su web — usa window.location per reload
-      if (Platform.OS === 'web') {
-        window.location.href = '/'
-      } else {
-        router.replace('/(tabs)')
+      try {
+        console.log('goBack called, platform:', Platform.OS)
+        if (Platform.OS === 'web') {
+          console.log('window.location available:', typeof window !== 'undefined' && typeof window.location !== 'undefined')
+          if (typeof window !== 'undefined' && typeof window.location !== 'undefined') {
+            window.location.href = '/'
+          } else {
+            console.log('window.location not available')
+          }
+        } else {
+          console.log('using router.replace')
+          router.replace('/(tabs)')
+        }
+      } catch (e) {
+        console.error('handleBack error:', e)
       }
     }
 
