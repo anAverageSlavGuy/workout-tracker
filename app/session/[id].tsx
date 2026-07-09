@@ -49,13 +49,15 @@ export default function SessionScreen() {
   }, [session])
 
   function handleBack() {
+    const goBack = () => router.replace('/(tabs)')
+
     if ((session?.session_sets?.length ?? 0) > 0) {
       Alert.alert('Esci', 'Vuoi uscire? I dati sono già salvati.', [
         { text: 'Annulla', style: 'cancel' },
-        { text: 'Esci', onPress: () => router.back() },
+        { text: 'Esci', onPress: goBack },
       ])
     } else {
-      router.back()
+      goBack()
     }
   }
 
