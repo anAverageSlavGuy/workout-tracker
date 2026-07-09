@@ -49,15 +49,21 @@ export default function SessionScreen() {
   }, [session])
 
   function handleBack() {
-    console.log('handleBack called')
+    const goBack = () => {
+      if (Platform.OS === 'web') {
+        window.history.back()
+      } else {
+        router.back()
+      }
+    }
+
     if ((session?.session_sets?.length ?? 0) > 0) {
       Alert.alert('Esci', 'Vuoi uscire? I dati sono già salvati.', [
         { text: 'Annulla', style: 'cancel' },
-        { text: 'Esci', onPress: () => { console.log('going back'); router.back() } },
+        { text: 'Esci', onPress: goBack },
       ])
     } else {
-      console.log('no sets, going back immediately')
-      router.back()
+      goBack()
     }
   }
 
