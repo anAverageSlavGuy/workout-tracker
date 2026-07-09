@@ -82,7 +82,7 @@ export function useCreateSession() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      const { data, error } = await supabase
+      const { data: session, error } = await supabase
         .from('sessions')
         .insert({
           user_id: user.id,
@@ -93,7 +93,30 @@ export function useCreateSession() {
         .select()
         .single()
       if (error) throw error
-      return data as Session
+
+      // Se c'è un template, pre-carico gli esercizi con set vuoti (weight=0)
+      if (input.template_id) {
+        const { data: templateExercises } = await supabase
+          .from('template_exercises')
+          .select('*, exercises(*)')
+          .eq('template_id', input.template_id)
+          .order('position')
+
+        if (templateExercises && templateExercises.length > 0) {
+          const sets = templateExercises.flatMap(te =>
+            Array.from({ length: te.target_sets }, (_, i) => ({
+              session_id: session.id,
+              exercise_id: te.exercise_id,
+              set_number: i + 1,
+              weight: 0,
+              reps: te.target_reps,
+            }))
+          )
+          await supabase.from('session_sets').insert(sets)
+        }
+      }
+
+      return session as Session
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['sessions'] }),
   })

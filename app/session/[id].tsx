@@ -23,8 +23,20 @@ export default function SessionScreen() {
   const deleteSet = useDeleteSet()
 
   const [showPicker, setShowPicker] = useState(false)
-  const [newWeight, setNewWeight] = useState<Record<string, string>>({})
-  const [newReps, setNewReps] = useState<Record<string, string>>({})
+  // Stato separato per ogni esercizio: { weight, reps }
+  const [inputs, setInputs] = useState<Record<string, { weight: string; reps: string }>>({})
+
+  function getInput(exerciseId: string) {
+    return inputs[exerciseId] ?? { weight: '', reps: '' }
+  }
+
+  function setInput(exerciseId: string, field: 'weight' | 'reps', value: string) {
+    setInputs(prev => ({ ...prev, [exerciseId]: { ...getInput(exerciseId), [field]: value } }))
+  }
+
+  function clearInput(exerciseId: string) {
+    setInputs(prev => ({ ...prev, [exerciseId]: { weight: '', reps: '' } }))
+  }
 
   const setsByExercise = useMemo(() => {
     const map: Record<string, { exercise: Exercise; sets: SessionSet[] }> = {}
@@ -48,23 +60,29 @@ export default function SessionScreen() {
   }
 
   async function handleAddExercise(exercise: Exercise) {
-    const w = parseFloat(newWeight[exercise.id] ?? '0') || 0
-    const r = parseInt(newReps[exercise.id] ?? '10', 10) || 10
+    // Aggiunge l'esercizio con un set placeholder (peso 0, rep dalle input o default 10)
+    const { weight, reps } = getInput(exercise.id)
     const existingSets = setsByExercise.find(g => g.exercise.id === exercise.id)?.sets ?? []
     await addSet.mutateAsync({
       session_id: id,
       exercise_id: exercise.id,
       set_number: existingSets.length + 1,
-      weight: w,
-      reps: r,
+      weight: parseFloat(weight) || 0,
+      reps: parseInt(reps, 10) || 10,
     })
   }
 
   async function handleAddSet(exercise: Exercise) {
     const group = setsByExercise.find(g => g.exercise.id === exercise.id)
     const lastSet = group?.sets.at(-1)
-    const w = parseFloat(newWeight[exercise.id] ?? '') || (lastSet?.weight ?? 0)
-    const r = parseInt(newReps[exercise.id] ?? '', 10) || (lastSet?.reps ?? 10)
+    const { weight, reps } = getInput(exercise.id)
+
+    // Usa il valore digitato; se vuoto, ripropone l'ultimo set
+    const w = weight.trim() !== '' ? parseFloat(weight) : (lastSet?.weight ?? 0)
+    const r = reps.trim() !== '' ? parseInt(reps, 10) : (lastSet?.reps ?? 10)
+
+    if (isNaN(w) || isNaN(r) || r <= 0) return
+
     await addSet.mutateAsync({
       session_id: id,
       exercise_id: exercise.id,
@@ -72,6 +90,7 @@ export default function SessionScreen() {
       weight: w,
       reps: r,
     })
+    clearInput(exercise.id)
   }
 
   if (isLoading || !session) {
@@ -138,8 +157,8 @@ export default function SessionScreen() {
                   placeholder={sets.at(-1)?.weight.toString() ?? '0'}
                   placeholderTextColor={colors.textDim}
                   keyboardType="decimal-pad"
-                  value={newWeight[exercise.id] ?? ''}
-                  onChangeText={v => setNewWeight(prev => ({ ...prev, [exercise.id]: v }))}
+                  value={getInput(exercise.id).weight}
+                  onChangeText={v => setInput(exercise.id, 'weight', v)}
                 />
                 <Text style={styles.addSetUnit}>kg</Text>
                 <Text style={styles.addSetCross}>×</Text>
@@ -148,8 +167,8 @@ export default function SessionScreen() {
                   placeholder={sets.at(-1)?.reps.toString() ?? '10'}
                   placeholderTextColor={colors.textDim}
                   keyboardType="number-pad"
-                  value={newReps[exercise.id] ?? ''}
-                  onChangeText={v => setNewReps(prev => ({ ...prev, [exercise.id]: v }))}
+                  value={getInput(exercise.id).reps}
+                  onChangeText={v => setInput(exercise.id, 'reps', v)}
                 />
                 <Text style={styles.addSetUnit}>rep</Text>
                 <TouchableOpacity
