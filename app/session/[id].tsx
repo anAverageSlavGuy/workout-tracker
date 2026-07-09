@@ -102,7 +102,7 @@ export default function SessionScreen() {
   return (
     <View style={styles.safe}>
       <View style={styles.header}>
-          <Pressable onPress={handleBack} style={styles.backBtn} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <Pressable onPress={handleBack} style={styles.backBtn} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} onLongPress={() => { if (Platform.OS === 'web') window.location.href = '/' }}>
             <Text style={styles.backChar}>↓</Text>
           </Pressable>
           <View style={{ flex: 1 }}>
