@@ -10,6 +10,7 @@ import { it } from 'date-fns/locale'
 import { useSession, useAddSet, useUpdateSet, useDeleteSet, useDeleteSession } from '../../hooks/useSessions'
 import { ExercisePicker } from '../../components/ExercisePicker'
 import { SetRow } from '../../components/SetRow'
+import { MuscleActivationBadges } from '../../components/MuscleActivationBadges'
 import { Exercise, SessionSet } from '../../lib/types'
 import { colors } from '../../constants/colors'
 
@@ -172,6 +173,9 @@ export default function SessionScreen() {
                       ? `${exercise.name.toUpperCase()} (${exercise.equipment_types.name})`
                       : exercise.name.toUpperCase()}
                   </Text>
+                  <View style={{ marginTop: 6 }}>
+                    <MuscleActivationBadges exercise={exercise} size="small" />
+                  </View>
                 </View>
                 <Text style={styles.setCount}>{sets.length} SET</Text>
               </View>

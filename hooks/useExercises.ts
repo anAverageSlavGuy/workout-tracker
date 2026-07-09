@@ -53,9 +53,9 @@ export function useCreateExercise() {
       if (exErr) throw exErr
 
       const muscleRows = [
-        { exercise_id: exercise.id, muscle_group_id: input.primary_muscle_group_id, role: 'primary' },
+        { exercise_id: exercise.id, muscle_group_id: input.primary_muscle_group_id, activation_percentage: 100 },
         ...(input.secondary_muscle_group_ids ?? []).map(id => ({
-          exercise_id: exercise.id, muscle_group_id: id, role: 'secondary',
+          exercise_id: exercise.id, muscle_group_id: id, activation_percentage: 50,
         })),
       ]
       const { error: mErr } = await supabase.from('exercise_muscles').insert(muscleRows)

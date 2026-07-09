@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useExercises } from "../hooks/useExercises";
 import { Exercise, EquipmentType } from "../lib/types";
 import { colors } from "../constants/colors";
+import { MuscleActivationBadges } from "./MuscleActivationBadges";
 
 interface Props {
   visible: boolean;
@@ -50,11 +51,18 @@ export function ExercisePicker({ visible, onClose, onSelect }: Props) {
   });
 
   const grouped = filtered.reduce<Record<string, Exercise[]>>((acc, ex) => {
-    const primary =
-      ex.exercise_muscles?.find((em) => em.role === "primary")?.muscle_groups
-        ?.name ?? "Altro";
-    if (!acc[primary]) acc[primary] = [];
-    acc[primary].push(ex);
+    // Raggruppa per il muscolo con activation_percentage più alto (evita duplicati)
+    if (!ex.exercise_muscles || ex.exercise_muscles.length === 0) {
+      if (!acc["Altro"]) acc["Altro"] = [];
+      acc["Altro"].push(ex);
+    } else {
+      const primaryMuscle = ex.exercise_muscles.reduce((max, em) =>
+        (em.activation_percentage ?? 0) > (max.activation_percentage ?? 0) ? em : max
+      );
+      const muscleGroup = primaryMuscle.muscle_groups?.name ?? "Altro";
+      if (!acc[muscleGroup]) acc[muscleGroup] = [];
+      acc[muscleGroup].push(ex);
+    }
     return acc;
   }, {});
 
@@ -164,6 +172,9 @@ export function ExercisePicker({ visible, onClose, onSelect }: Props) {
                     <View style={styles.exAccent} />
                     <View style={{ flex: 1 }}>
                       <Text style={styles.exName}>{displayName}</Text>
+                      <View style={{ marginTop: 4 }}>
+                        <MuscleActivationBadges exercise={ex} size="small" />
+                      </View>
                     </View>
                     <Text style={styles.addChar}>+</Text>
                   </TouchableOpacity>

@@ -22,7 +22,7 @@ export interface Exercise {
 export interface ExerciseMuscle {
   exercise_id: string
   muscle_group_id: string
-  role: 'primary' | 'secondary'
+  activation_percentage: number
   muscle_groups?: MuscleGroup
 }
 

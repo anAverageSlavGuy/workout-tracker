@@ -10,6 +10,7 @@ import { colors } from '../../constants/colors'
 import { epley1RM, Exercise } from '../../lib/types'
 
 type StatTab = 'progressione' | 'frequenza' | 'volume'
+type VolumeType = 'reps' | 'meccanico' | 'tonnellaggio'
 
 const chartTheme = {
   ...VictoryTheme.material,
@@ -28,6 +29,7 @@ export default function StatsScreen() {
   const [tab, setTab] = useState<StatTab>('progressione')
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null)
   const [showPicker, setShowPicker] = useState(false)
+  const [volumeType, setVolumeType] = useState<VolumeType>('meccanico')
 
   const { data: sessions = [] } = useSessions()
   const { data: exercises = [] } = useExercises()
@@ -42,15 +44,23 @@ export default function StatsScreen() {
     ? sessions
         .flatMap(s => (s.session_sets ?? [])
           .filter(ss => ss.exercise_id === selectedExercise.id)
-          .map(ss => ({ date: s.date, orm: epley1RM(ss.weight, ss.reps) }))
+          .map(ss => ({ date: s.date, orm: epley1RM(ss.weight, ss.reps), weight: ss.weight, reps: ss.reps }))
         )
         .sort((a, b) => a.date.localeCompare(b.date))
-        .reduce<Array<{ x: string; y: number }>>((acc, cur) => {
-          const existing = acc.find(p => p.x === cur.date)
-          if (existing) { existing.y = Math.max(existing.y, cur.orm) } else { acc.push({ x: cur.date, y: cur.orm }) }
+        .reduce<Array<{ x: number; y: number; label: string }>>((acc, cur) => {
+          const existing = acc.find(p => p.label === cur.date)
+          const entry = { x: acc.length, y: cur.orm, label: cur.date }
+          if (existing) { existing.y = Math.max(existing.y, cur.orm) } else { acc.push(entry) }
           return acc
         }, [])
     : []
+
+  if (selectedExercise && progressionData.length > 0) {
+    console.log('Selected exercise:', selectedExercise.name)
+    console.log('Progression data:', progressionData)
+    const rawData = sessions.flatMap(s => (s.session_sets ?? []).filter(ss => ss.exercise_id === selectedExercise.id).map(ss => ({ date: s.date, weight: ss.weight, reps: ss.reps, orm: epley1RM(ss.weight, ss.reps) })))
+    console.log('Raw data before reduce:', rawData)
+  }
 
   const weeklyData = (() => {
     const weeks = eachWeekOfInterval(
@@ -69,18 +79,46 @@ export default function StatsScreen() {
   })()
 
   const from30 = subDays(new Date(), 30).toISOString().split('T')[0]
-  const volumeByMuscle = sessions
-    .filter(s => s.date >= from30)
-    .flatMap(s => s.session_sets ?? [])
-    .reduce<Record<string, number>>((acc, ss) => {
-      const primary = ss.exercises?.exercise_muscles?.find(em => em.role === 'primary')
-      if (primary?.muscle_groups?.name) {
-        acc[primary.muscle_groups.name] = (acc[primary.muscle_groups.name] ?? 0) + ss.weight * ss.reps
-      }
-      return acc
-    }, {})
 
-  const volumeData = Object.entries(volumeByMuscle)
+  // Calcola tutti e 3 i tipi di volume
+  const calculateAllVolumes = () => {
+    const volumeReps: Record<string, number> = {}
+    const volumeMeccanico: Record<string, number> = {}
+    const volumeTonnellaggio: Record<string, number> = {}
+
+    sessions
+      .filter(s => s.date >= from30)
+      .flatMap(s => s.session_sets ?? [])
+      .forEach(ss => {
+        ss.exercises?.exercise_muscles?.forEach(em => {
+          if (em.muscle_groups?.name && em.activation_percentage > 0) {
+            const muscleGroup = em.muscle_groups.name
+            const activation = em.activation_percentage / 100
+
+            // 1. Reps × activation%
+            volumeReps[muscleGroup] = (volumeReps[muscleGroup] ?? 0) + ss.reps * activation
+
+            // 2. Weight × Reps × activation% (meccanico)
+            volumeMeccanico[muscleGroup] = (volumeMeccanico[muscleGroup] ?? 0) + ss.weight * ss.reps * activation
+
+            // 3. Weight × Reps × Sets (tonnellaggio) - qui consideriamo ogni set
+            volumeTonnellaggio[muscleGroup] = (volumeTonnellaggio[muscleGroup] ?? 0) + ss.weight * ss.reps * activation
+          }
+        })
+      })
+
+    return { volumeReps, volumeMeccanico, volumeTonnellaggio }
+  }
+
+  const { volumeReps, volumeMeccanico, volumeTonnellaggio } = calculateAllVolumes()
+
+  const volumeByType: Record<VolumeType, Record<string, number>> = {
+    reps: volumeReps,
+    meccanico: volumeMeccanico,
+    tonnellaggio: volumeTonnellaggio,
+  }
+
+  const volumeData = Object.entries(volumeByType[volumeType])
     .sort((a, b) => b[1] - a[1])
     .slice(0, 8)
     .map(([name, vol]) => ({ x: name.slice(0, 5), y: Math.round(vol) }))
@@ -111,21 +149,42 @@ export default function StatsScreen() {
           <View style={styles.section}>
             <TouchableOpacity style={styles.picker} onPress={() => setShowPicker(true)}>
               <Text style={styles.pickerLabel}>ESERCIZIO</Text>
-              <Text style={styles.pickerText}>{selectedExercise?.name ?? '— seleziona —'}</Text>
+              <Text style={styles.pickerText}>
+                {selectedExercise
+                  ? selectedExercise.equipment_types
+                    ? `${selectedExercise.name} (${selectedExercise.equipment_types.name})`
+                    : selectedExercise.name
+                  : '— seleziona —'}
+              </Text>
             </TouchableOpacity>
             {progressionData.length > 1 ? (
               <>
                 <Text style={styles.chartLabel}>1RM STIMATO (kg) — Formula Epley</Text>
-                <VictoryChart theme={chartTheme} height={240} padding={{ left: 55, right: 24, top: 16, bottom: 40 }}>
-                  <VictoryAxis
-                    tickFormat={(t: string, i: number) => i % 2 === 0 ? format(new Date(t), 'dd/MM') : ''}
-                  />
-                  <VictoryAxis dependentAxis />
-                  <VictoryLine
-                    data={progressionData}
-                    style={{ data: { stroke: colors.accent, strokeWidth: 2 } }}
-                  />
-                </VictoryChart>
+                {(() => {
+                  const yValues = progressionData.map(d => d.y)
+                  const minY = Math.min(...yValues)
+                  const maxY = Math.max(...yValues)
+                  const padding = (maxY - minY) * 0.2 || 20
+                  return (
+                    <VictoryChart theme={chartTheme} height={240} padding={{ left: 55, right: 24, top: 16, bottom: 40 }}>
+                      <VictoryAxis
+                        tickFormat={(x: number) => {
+                          const dataPoint = progressionData[x as number]
+                          return dataPoint && x % 2 === 0 ? format(new Date(dataPoint.label), 'dd/MM') : ''
+                        }}
+                      />
+                      <VictoryAxis
+                        dependentAxis
+                        domain={[minY - padding, maxY + padding]}
+                        tickFormat={(y: number) => Math.round(y).toString()}
+                      />
+                      <VictoryLine
+                        data={progressionData}
+                        style={{ data: { stroke: colors.accent, strokeWidth: 2 } }}
+                      />
+                    </VictoryChart>
+                  )
+                })()}
               </>
             ) : (
               <Text style={styles.empty}>{selectedExercise ? 'Dati insufficienti' : 'Seleziona un esercizio per vedere il grafico'}</Text>
@@ -149,7 +208,30 @@ export default function StatsScreen() {
 
         {tab === 'volume' && (
           <View style={styles.section}>
-            <Text style={styles.chartLabel}>VOLUME PER GRUPPO — ultimi 30 giorni</Text>
+            <View style={styles.volumeTypeSelector}>
+              {['reps', 'meccanico', 'tonnellaggio'].map((type) => (
+                <TouchableOpacity
+                  key={type}
+                  style={[styles.volumeTypeBtn, volumeType === type && styles.volumeTypeBtnActive]}
+                  onPress={() => setVolumeType(type as VolumeType)}
+                >
+                  <Text
+                    style={[
+                      styles.volumeTypeText,
+                      volumeType === type && styles.volumeTypeTextActive,
+                    ]}
+                  >
+                    {type === 'reps' ? 'REPS' : type === 'meccanico' ? 'MECC.' : 'TONNEL.'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <Text style={styles.chartLabel}>
+              {volumeType === 'reps' && 'REPS × ATTIVAZIONE'}
+              {volumeType === 'meccanico' && 'PESO × REPS × ATTIVAZIONE'}
+              {volumeType === 'tonnellaggio' && 'TONNELLAGGIO × ATTIVAZIONE'}
+              {' — ultimi 30 giorni'}
+            </Text>
             {volumeData.length > 0 ? (
               <VictoryChart theme={chartTheme} height={280} padding={{ left: 55, right: 16, top: 16, bottom: 40 }}>
                 <VictoryAxis style={{ tickLabels: { fontSize: 9, fill: colors.textMuted } }} />
@@ -176,15 +258,17 @@ export default function StatsScreen() {
             data={exercises}
             keyExtractor={e => e.id}
             ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: colors.border }} />}
-            renderItem={({ item }) => (
-              <TouchableOpacity style={styles.pickerRow} onPress={() => { setSelectedExercise(item); setShowPicker(false) }}>
-                <View style={styles.pickerDot} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.pickerRowText}>{item.name}</Text>
-                  {item.equipment && <Text style={styles.pickerRowSub}>{item.equipment}</Text>}
-                </View>
-              </TouchableOpacity>
-            )}
+            renderItem={({ item }) => {
+              const displayName = item.equipment_types ? `${item.name} (${item.equipment_types.name})` : item.name
+              return (
+                <TouchableOpacity style={styles.pickerRow} onPress={() => { setSelectedExercise(item); setShowPicker(false) }}>
+                  <View style={styles.pickerDot} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.pickerRowText}>{displayName}</Text>
+                  </View>
+                </TouchableOpacity>
+              )
+            }}
           />
         </SafeAreaView>
       </Modal>
@@ -218,4 +302,28 @@ const styles = StyleSheet.create({
   pickerDot: { width: 4, height: 4, backgroundColor: colors.accent, transform: [{ rotate: '45deg' }] },
   pickerRowText: { fontSize: 14, color: colors.text },
   pickerRowSub: { fontSize: 11, color: colors.textMuted, marginTop: 4 },
+  volumeTypeSelector: { flexDirection: 'row', gap: 8, marginBottom: 16, marginTop: 8 },
+  volumeTypeBtn: {
+    flex: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  volumeTypeBtnActive: {
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
+  },
+  volumeTypeText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: colors.textMuted,
+    letterSpacing: 2,
+  },
+  volumeTypeTextActive: {
+    color: colors.bg,
+  },
 })

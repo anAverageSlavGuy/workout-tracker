@@ -94,6 +94,7 @@ export default function HistoryScreen() {
 
       {view === 'list' ? (
         <FlatList
+          style={styles.flatlist}
           data={sessions}
           keyExtractor={s => s.id}
           renderItem={renderSession}
@@ -163,10 +164,11 @@ const styles = StyleSheet.create({
   viewTabTextActive: { color: colors.accent },
   filterScroll: { maxHeight: 48, borderBottomWidth: 1, borderBottomColor: colors.border },
   filterContent: { paddingHorizontal: 16, gap: 8, alignItems: 'center', paddingVertical: 8 },
-  chip: { paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: colors.border },
-  chipActive: { backgroundColor: colors.accentDim, borderColor: colors.accent },
-  chipText: { fontSize: 9, color: colors.textMuted, letterSpacing: 2, fontWeight: '700' },
-  chipTextActive: { color: colors.accent },
+  chip: { paddingHorizontal: 12, paddingVertical: 4, borderWidth: 1, borderColor: colors.border, justifyContent: 'center', alignItems: 'center', minHeight: 28, height: 28 },
+  chipActive: { backgroundColor: colors.accent, borderColor: colors.accent },
+  chipText: { fontSize: 9, color: colors.textMuted, letterSpacing: 1, fontWeight: '700' },
+  chipTextActive: { color: colors.bg },
+  flatlist: { flex: 1 },
   list: { paddingVertical: 0 },
   card: { flexDirection: 'row', alignItems: 'center', paddingVertical: 16, paddingHorizontal: 16, gap: 16, backgroundColor: colors.bg },
   cardLeft: { alignItems: 'center', width: 36 },
