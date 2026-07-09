@@ -107,14 +107,20 @@ export default function SessionScreen() {
     clearInput(exercise.id)
   }
 
-  function handleDeleteSession() {
-    Alert.alert('Elimina allenamento', 'Sei sicuro di voler eliminare questo allenamento?', [
-      { text: 'Annulla', style: 'cancel' },
-      { text: 'Elimina', style: 'destructive', onPress: async () => {
-        await deleteSession.mutateAsync(id)
-        router.replace('/(tabs)')
-      }},
-    ])
+  async function handleDeleteSession() {
+    const confirmed = Platform.OS === 'web'
+      ? window.confirm('Sei sicuro di voler eliminare questo allenamento?')
+      : await new Promise(resolve => {
+          Alert.alert('Elimina allenamento', 'Sei sicuro di voler eliminare questo allenamento?', [
+            { text: 'Annulla', style: 'cancel', onPress: () => resolve(false) },
+            { text: 'Elimina', style: 'destructive', onPress: () => resolve(true) },
+          ])
+        })
+
+    if (confirmed) {
+      await deleteSession.mutateAsync(id)
+      router.replace('/(tabs)')
+    }
   }
 
   if (isLoading || !session) {
