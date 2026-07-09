@@ -15,10 +15,14 @@ export function SetRow({ set, onDelete, onUpdate }: Props) {
   const [editing, setEditing] = useState(false)
   const repsRef = useRef<TextInput>(null)
 
-  function commit() {
+  function save() {
     const w = parseFloat(weight)
     const r = parseInt(reps, 10)
     if (!isNaN(w) && !isNaN(r) && r > 0) onUpdate(w, r, set.rpe)
+  }
+
+  function closeEdit() {
+    save()
     setEditing(false)
   }
 
@@ -36,7 +40,7 @@ export function SetRow({ set, onDelete, onUpdate }: Props) {
             keyboardType="decimal-pad"
             autoFocus
             returnKeyType="next"
-            // non committiamo su blur peso: l'utente deve poter spostarsi al campo rep
+            onBlur={save}
             onSubmitEditing={() => repsRef.current?.focus()}
           />
           <Text style={styles.unit}>kg</Text>
@@ -48,8 +52,8 @@ export function SetRow({ set, onDelete, onUpdate }: Props) {
             onChangeText={setReps}
             keyboardType="number-pad"
             returnKeyType="done"
-            onBlur={commit}
-            onSubmitEditing={commit}
+            onBlur={closeEdit}
+            onSubmitEditing={closeEdit}
           />
           <Text style={styles.unit}>rep</Text>
         </View>
