@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, Pressable,
   TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -49,13 +49,15 @@ export default function SessionScreen() {
   }, [session])
 
   function handleBack() {
+    console.log('handleBack called')
     if ((session?.session_sets?.length ?? 0) > 0) {
       Alert.alert('Esci', 'Vuoi uscire? I dati sono già salvati.', [
         { text: 'Annulla', style: 'cancel' },
-        { text: 'Esci', onPress: () => router.dismiss() },
+        { text: 'Esci', onPress: () => { console.log('going back'); router.back() } },
       ])
     } else {
-      router.dismiss()
+      console.log('no sets, going back immediately')
+      router.back()
     }
   }
 
@@ -101,9 +103,9 @@ export default function SessionScreen() {
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleBack} style={styles.backBtn} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <Pressable onPress={handleBack} style={styles.backBtn} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
             <Text style={styles.backChar}>↓</Text>
-          </TouchableOpacity>
+          </Pressable>
           <View style={{ flex: 1 }}>
             <Text style={styles.headerTitle}>ALLENAMENTO</Text>
             <Text style={styles.headerDate}>{format(new Date(session.date), 'EEEE d MMMM', { locale: it })}</Text>
