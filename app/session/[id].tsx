@@ -114,6 +114,13 @@ export default function SessionScreen() {
           </TouchableOpacity>
         </View>
         <View style={styles.headerDivider} />
+        {Platform.OS === 'web' && (
+          <View style={{ padding: 8, backgroundColor: colors.accentDim, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+            <Text style={{ fontSize: 12, color: colors.accent, textAlign: 'center', letterSpacing: 1 }}>
+              ← Premi long-press sul ↓ per tornare o usa il bottone back del browser
+            </Text>
+          </View>
+        )}
 
         <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           {setsByExercise.length === 0 && (
