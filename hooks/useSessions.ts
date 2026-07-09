@@ -157,6 +157,7 @@ export function useUpdateSet() {
       weight?: number
       reps?: number
       rpe?: number | null
+      set_type?: string | null
     }) => {
       const { id, session_id: _sid, ...updates } = input
       const { data, error } = await supabase

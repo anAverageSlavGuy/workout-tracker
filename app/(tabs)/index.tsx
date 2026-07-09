@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 14,
     borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: 14,
   },
-  sessionDate: { fontSize: 13, fontWeight: '700', color: colors.accent, width: 38 },
+  sessionDate: { display: 'flex',fontSize: 13, fontWeight: '700', color: colors.accent, width: 38 },
   sessionDividerV: { width: 1, height: 28, backgroundColor: colors.border },
   sessionInfo: { flex: 1, fontSize: 12, color: colors.textMuted },
   sessionSets: { fontSize: 11, color: colors.textDim },

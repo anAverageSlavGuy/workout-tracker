@@ -102,7 +102,7 @@ export default function SessionScreen() {
   return (
     <View style={styles.safe}>
       <View style={styles.header}>
-          <Pressable onPress={handleBack} style={styles.backBtn} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} onLongPress={() => { if (Platform.OS === 'web') window.location.href = '/' }}>
+          <Pressable onPress={handleBack} style={styles.backBtn} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} onLongPress={() => { if (Platform.OS === 'web') window.history.back() }}>
             <Text style={styles.backChar}>↓</Text>
           </Pressable>
           <View style={{ flex: 1 }}>
@@ -117,7 +117,7 @@ export default function SessionScreen() {
         {Platform.OS === 'web' && (
           <View style={{ padding: 8, backgroundColor: colors.accentDim, borderBottomWidth: 1, borderBottomColor: colors.border }}>
             <Text style={{ fontSize: 12, color: colors.accent, textAlign: 'center', letterSpacing: 1 }}>
-              ← Premi long-press sul ↓ per tornare o usa il bottone back del browser
+              Tieni premuto ↓ per tornare o usa il bottone back del browser
             </Text>
           </View>
         )}
@@ -155,7 +155,7 @@ export default function SessionScreen() {
                   key={s.id}
                   set={s}
                   onDelete={() => deleteSet.mutate({ id: s.id, session_id: id })}
-                  onUpdate={(w, r, rpe) => updateSet.mutate({ id: s.id, session_id: id, weight: w, reps: r, rpe })}
+                  onUpdate={(w, r, rpe, setType) => updateSet.mutate({ id: s.id, session_id: id, weight: w, reps: r, rpe, set_type: setType })}
                 />
               ))}
 

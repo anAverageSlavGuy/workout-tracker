@@ -6,7 +6,7 @@ import { colors } from '../constants/colors'
 interface Props {
   set: SessionSet
   onDelete: () => void
-  onUpdate: (weight: number, reps: number, rpe?: number | null) => void
+  onUpdate: (weight: number, reps: number, rpe?: number | null, setType?: string | null) => void
 }
 
 export function SetRow({ set, onDelete, onUpdate }: Props) {
@@ -58,14 +58,29 @@ export function SetRow({ set, onDelete, onUpdate }: Props) {
           <Text style={styles.unit}>rep</Text>
         </View>
       ) : (
-        <TouchableOpacity style={styles.values} onPress={() => setEditing(true)}>
-          <Text style={styles.value}>{set.weight}</Text>
-          <Text style={styles.unit}> kg</Text>
-          <Text style={styles.cross}>×</Text>
-          <Text style={styles.value}>{set.reps}</Text>
-          <Text style={styles.unit}> rep</Text>
-          {set.rpe != null && <Text style={styles.rpe}>  RPE {set.rpe}</Text>}
-        </TouchableOpacity>
+        <View style={styles.viewMode}>
+          <TouchableOpacity style={styles.values} onPress={() => setEditing(true)}>
+            <Text style={styles.value}>{set.weight}</Text>
+            <Text style={styles.unit}> kg</Text>
+            <Text style={styles.cross}>×</Text>
+            <Text style={styles.value}>{set.reps}</Text>
+            <Text style={styles.unit}> rep</Text>
+            {set.rpe != null && <Text style={styles.rpe}>  RPE {set.rpe}</Text>}
+          </TouchableOpacity>
+          <View style={styles.typeButtons}>
+            {(['topset', 'backoff', null] as const).map(type => (
+              <TouchableOpacity
+                key={type ?? 'none'}
+                style={[styles.typeBtn, set.set_type === type && styles.typeBtnActive]}
+                onPress={() => onUpdate(set.weight, set.reps, set.rpe, type)}
+              >
+                <Text style={[styles.typeBtnText, set.set_type === type && styles.typeBtnTextActive]}>
+                  {type === 'topset' ? 'T' : type === 'backoff' ? 'B' : '—'}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
       )}
 
       <TouchableOpacity onPress={onDelete} style={styles.deleteBtn}>
@@ -83,7 +98,13 @@ const styles = StyleSheet.create({
   },
   setNum: { width: 20, fontSize: 11, fontWeight: '900', color: colors.accent, textAlign: 'center', letterSpacing: 1 },
   sep: { width: 1, height: 24, backgroundColor: colors.border },
-  values: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+  viewMode: { flex: 1, gap: 6 },
+  values: { flexDirection: 'row', alignItems: 'center' },
+  typeButtons: { flexDirection: 'row', gap: 3 },
+  typeBtn: { paddingHorizontal: 6, paddingVertical: 3, borderWidth: 1, borderColor: colors.border, borderRadius: 3 },
+  typeBtnActive: { backgroundColor: colors.accent, borderColor: colors.accent },
+  typeBtnText: { fontSize: 9, fontWeight: '700', color: colors.textMuted },
+  typeBtnTextActive: { color: colors.bg },
   editRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
   value: { fontSize: 16, fontWeight: '700', color: colors.text },
   cross: { fontSize: 12, color: colors.textMuted, marginHorizontal: 6 },
