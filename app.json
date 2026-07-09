@@ -1,25 +1,37 @@
 {
   "expo": {
-    "name": "workout-tracker",
+    "name": "Workout Tracker",
     "slug": "workout-tracker",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
+    "scheme": "workout-tracker",
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
-      },
-      "predictiveBackGestureEnabled": false
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#0a0a0a"
+      }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png",
+      "output": "static",
+      "manifest": {
+        "name": "Workout Tracker",
+        "short_name": "Workout",
+        "description": "Traccia i tuoi allenamenti e la progressione dei carichi",
+        "theme_color": "#0a0a0a",
+        "background_color": "#0a0a0a",
+        "display": "standalone",
+        "orientation": "portrait"
+      }
+    },
+    "plugins": [
+      "expo-router"
+    ]
   }
 }

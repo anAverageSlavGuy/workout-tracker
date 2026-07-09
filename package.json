@@ -1,12 +1,27 @@
 {
   "name": "workout-tracker",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "expo-router/entry",
   "dependencies": {
+    "@expo/vector-icons": "^15.1.1",
+    "@react-native-async-storage/async-storage": "^3.1.1",
+    "@supabase/supabase-js": "^2.109.0",
+    "@tanstack/react-query": "^5.101.2",
+    "date-fns": "^4.4.0",
     "expo": "~57.0.4",
+    "expo-router": "^57.0.4",
     "expo-status-bar": "~57.0.0",
+    "nativewind": "^4.2.6",
     "react": "19.2.3",
-    "react-native": "0.86.0"
+    "react-native": "0.86.0",
+    "react-native-gesture-handler": "^3.0.2",
+    "react-native-reanimated": "^4.5.1",
+    "react-native-safe-area-context": "^5.8.0",
+    "react-native-screens": "^4.25.2",
+    "react-native-svg": "^15.15.5",
+    "react-native-url-polyfill": "^3.0.0",
+    "tailwindcss": "^3.4.19",
+    "victory-native": "^36.9.2"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
@@ -16,7 +31,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "build:web": "expo export --platform web"
   },
   "private": true
 }
