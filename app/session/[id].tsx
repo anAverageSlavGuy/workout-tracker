@@ -100,8 +100,7 @@ export default function SessionScreen() {
 
   return (
     <View style={styles.safe}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={styles.header}>
+      <View style={styles.header}>
           <Pressable onPress={handleBack} style={styles.backBtn} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
             <Text style={styles.backChar}>↓</Text>
           </Pressable>
@@ -187,8 +186,7 @@ export default function SessionScreen() {
           ))}
         </ScrollView>
 
-        <ExercisePicker visible={showPicker} onClose={() => setShowPicker(false)} onSelect={handleAddExercise} />
-      </KeyboardAvoidingView>
+      <ExercisePicker visible={showPicker} onClose={() => setShowPicker(false)} onSelect={handleAddExercise} />
     </View>
   )
 }
