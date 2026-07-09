@@ -3,14 +3,20 @@ export interface MuscleGroup {
   name: string
 }
 
+export interface EquipmentType {
+  id: string
+  name: string
+}
+
 export interface Exercise {
   id: string
   user_id: string | null
   name: string
-  equipment: string | null
+  equipment_id: string | null
   notes: string | null
   created_at: string
   exercise_muscles?: ExerciseMuscle[]
+  equipment_types?: EquipmentType
 }
 
 export interface ExerciseMuscle {

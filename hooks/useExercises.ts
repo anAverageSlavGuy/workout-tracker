@@ -22,7 +22,7 @@ export function useExercises() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('exercises')
-        .select('*, exercise_muscles(*, muscle_groups(*))')
+        .select('*, equipment_types(*), exercise_muscles(*, muscle_groups(*))')
         .order('name')
       if (error) throw error
       return data

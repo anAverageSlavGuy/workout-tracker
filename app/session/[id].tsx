@@ -167,8 +167,11 @@ export default function SessionScreen() {
               <View style={styles.exerciseHeader}>
                 <View style={styles.exAccentBar} />
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.exerciseName}>{exercise.name.toUpperCase()}</Text>
-                  {exercise.equipment && <Text style={styles.equipment}>{exercise.equipment}</Text>}
+                  <Text style={styles.exerciseName}>
+                    {exercise.equipment_types
+                      ? `${exercise.name.toUpperCase()} (${exercise.equipment_types.name})`
+                      : exercise.name.toUpperCase()}
+                  </Text>
                 </View>
                 <Text style={styles.setCount}>{sets.length} SET</Text>
               </View>
