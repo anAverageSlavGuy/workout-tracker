@@ -36,7 +36,7 @@ export function useSessions(filters?: SessionFilters) {
         result = result.filter(s =>
           s.session_sets?.some(set =>
             set.exercises?.exercise_muscles?.some(
-              em => em.role === 'primary' && em.muscle_group_id === filters.muscleGroupId
+              em => em.muscle_group_id === filters.muscleGroupId
             )
           )
         )
