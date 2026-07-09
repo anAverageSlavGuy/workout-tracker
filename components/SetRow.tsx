@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native'
 import { SessionSet } from '../lib/types'
 import { colors } from '../constants/colors'
@@ -13,6 +13,7 @@ export function SetRow({ set, onDelete, onUpdate }: Props) {
   const [weight, setWeight] = useState(set.weight.toString())
   const [reps, setReps] = useState(set.reps.toString())
   const [editing, setEditing] = useState(false)
+  const repsRef = useRef<TextInput>(null)
 
   function commit() {
     const w = parseFloat(weight)
@@ -34,16 +35,19 @@ export function SetRow({ set, onDelete, onUpdate }: Props) {
             onChangeText={setWeight}
             keyboardType="decimal-pad"
             autoFocus
-            onBlur={commit}
-            onSubmitEditing={commit}
+            returnKeyType="next"
+            // non committiamo su blur peso: l'utente deve poter spostarsi al campo rep
+            onSubmitEditing={() => repsRef.current?.focus()}
           />
           <Text style={styles.unit}>kg</Text>
           <Text style={styles.cross}>×</Text>
           <TextInput
+            ref={repsRef}
             style={styles.input}
             value={reps}
             onChangeText={setReps}
             keyboardType="number-pad"
+            returnKeyType="done"
             onBlur={commit}
             onSubmitEditing={commit}
           />
