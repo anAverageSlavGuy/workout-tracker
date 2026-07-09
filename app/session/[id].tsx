@@ -99,7 +99,7 @@ export default function SessionScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <View style={styles.safe}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.header}>
           <Pressable onPress={handleBack} style={styles.backBtn} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
@@ -189,7 +189,7 @@ export default function SessionScreen() {
 
         <ExercisePicker visible={showPicker} onClose={() => setShowPicker(false)} onSelect={handleAddExercise} />
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   )
 }
 
