@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "Workout Tracker",
-    "slug": "workout-tracker",
+    "name": "ASCENT",
+    "slug": "ascent-workout",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "scheme": "workout-tracker",
+    "scheme": "ascent",
     "ios": {
       "supportsTablet": true
     },
@@ -21,11 +21,11 @@
       "favicon": "./assets/favicon.png",
       "output": "single",
       "manifest": {
-        "name": "Workout Tracker",
-        "short_name": "Workout",
+        "name": "ASCENT",
+        "short_name": "ASCENT",
         "description": "Traccia i tuoi allenamenti e la progressione dei carichi",
-        "theme_color": "#07000a",
-        "background_color": "#07000a",
+        "theme_color": "#0a0a0c",
+        "background_color": "#0a0a0c",
         "display": "standalone",
         "orientation": "portrait"
       }

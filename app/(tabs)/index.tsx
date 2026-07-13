@@ -43,7 +43,7 @@ export default function DashboardScreen() {
           <View style={styles.ornamentRow}>
             <View style={styles.line} /><Text style={styles.ornamentChar}>✦</Text><View style={styles.line} />
           </View>
-          <Text style={styles.appName}>WORKOUT</Text>
+          <Text style={styles.appName}>ASCENT</Text>
           <Text style={styles.greeting}>{user?.email?.split('@')[0]}</Text>
           <Text style={styles.dateText}>{format(today, 'EEEE d MMMM', { locale: it })}</Text>
         </View>

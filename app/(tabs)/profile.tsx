@@ -55,7 +55,7 @@ export default function ProfileScreen() {
         <View style={styles.ornamentBottom}>
           <View style={styles.line} /><Text style={styles.ornamentChar}>✦</Text><View style={styles.line} />
         </View>
-        <Text style={styles.version}>WORKOUT TRACKER v1.0.0</Text>
+        <Text style={styles.version}>ASCENT v1.0.0</Text>
       </View>
     </SafeAreaView>
   )

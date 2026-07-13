@@ -1,0 +1,7 @@
+<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer diamond -->
+  <path d="M 24 4 L 44 24 L 24 44 L 4 24 Z" fill="none" stroke="#d41f2e" stroke-width="2"/>
+
+  <!-- Inner diamond filled -->
+  <path d="M 24 10 L 38 24 L 24 38 L 10 24 Z" fill="#d41f2e" stroke="#d41f2e" stroke-width="1"/>
+</svg>
