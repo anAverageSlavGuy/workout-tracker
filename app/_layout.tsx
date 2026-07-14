@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Platform } from 'react-native'
 
 // Suppress victory-native DOM prop warnings on web (known issue with RN props passed to DOM)
@@ -11,7 +11,7 @@ if (Platform.OS === 'web' && typeof console !== 'undefined') {
   }
 }
 import { Stack, useRouter, useSegments } from 'expo-router'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from '../lib/auth'
 import { StatusBar } from 'expo-status-bar'
 import { colors } from '../constants/colors'
@@ -24,13 +24,33 @@ function RootLayoutNav() {
   const { session, loading } = useAuth()
   const router = useRouter()
   const segments = useSegments()
+  const qc = useQueryClient()
+  const previousUserId = useRef<string | null>(null)
 
   useEffect(() => {
     if (loading) return
     const inAuth = segments[0] === '(auth)'
-    if (!session && !inAuth) router.replace('/(auth)/login')
-    else if (session && inAuth) router.replace('/(tabs)')
-  }, [session, loading, segments])
+    const inSessionDetail = segments[0] === 'session'
+    const currentUserId = session?.user.id ?? null
+    const userChanged = Boolean(previousUserId.current && currentUserId && previousUserId.current !== currentUserId)
+    const staleSessionDetail = Boolean(inSessionDetail && currentUserId && previousUserId.current !== currentUserId)
+
+    if (!currentUserId) {
+      previousUserId.current = null
+      qc.clear()
+      if (!inAuth) router.replace('/(auth)/login')
+      return
+    }
+
+    if (userChanged || staleSessionDetail) {
+      qc.clear()
+      router.replace('/(tabs)')
+    } else if (inAuth) {
+      router.replace('/(tabs)')
+    }
+
+    previousUserId.current = currentUserId
+  }, [session, loading, segments, qc, router])
 
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>

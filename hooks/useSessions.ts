@@ -239,3 +239,23 @@ export function useDeleteSession() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['sessions'] }),
   })
 }
+
+export function useUpdateSessionDate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, date }: { id: string; date: string }) => {
+      const { data, error } = await supabase
+        .from('sessions')
+        .update({ date })
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+      return data as Session
+    },
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ['session', vars.id] })
+      qc.invalidateQueries({ queryKey: ['sessions'] })
+    },
+  })
+}

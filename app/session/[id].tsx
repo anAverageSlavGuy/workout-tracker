@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
-import { useSession, useAddSet, useUpdateSet, useDeleteSet, useDeleteSession } from '../../hooks/useSessions'
+import { useSession, useAddSet, useUpdateSet, useDeleteSet, useDeleteSession, useUpdateSessionDate } from '../../hooks/useSessions'
 import { ExercisePicker } from '../../components/ExercisePicker'
 import { SetRow } from '../../components/SetRow'
 import { MuscleActivationBadges } from '../../components/MuscleActivationBadges'
@@ -23,8 +23,11 @@ export default function SessionScreen() {
   const updateSet = useUpdateSet()
   const deleteSet = useDeleteSet()
   const deleteSession = useDeleteSession()
+  const updateSessionDate = useUpdateSessionDate()
 
   const [showPicker, setShowPicker] = useState(false)
+  const [isEditingDate, setIsEditingDate] = useState(false)
+  const [dateInput, setDateInput] = useState('')
   // Stato separato per ogni esercizio: { weight, reps }
   const [inputs, setInputs] = useState<Record<string, { weight: string; reps: string }>>({})
 
@@ -122,6 +125,35 @@ export default function SessionScreen() {
       await deleteSession.mutateAsync(id)
       router.replace('/(tabs)')
     }
+  }
+
+  function startEditingDate() {
+    setDateInput(session?.date ?? '')
+    setIsEditingDate(true)
+  }
+
+  function formatDateInput(value: string) {
+    const digits = value.replace(/\D/g, '').slice(0, 8)
+    if (digits.length <= 4) return digits
+    if (digits.length <= 6) return `${digits.slice(0, 4)}-${digits.slice(4)}`
+    return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`
+  }
+
+  async function handleUpdateDate() {
+    const nextDate = dateInput.trim()
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(nextDate)) {
+      Alert.alert('Data non valida', 'Inserisci la data nel formato YYYY-MM-DD.')
+      return
+    }
+
+    const parsed = new Date(`${nextDate}T00:00:00`)
+    if (Number.isNaN(parsed.getTime()) || format(parsed, 'yyyy-MM-dd') !== nextDate) {
+      Alert.alert('Data non valida', 'Controlla giorno, mese e anno.')
+      return
+    }
+
+    await updateSessionDate.mutateAsync({ id, date: nextDate })
+    setIsEditingDate(false)
   }
 
   if (isLoading || !session) {
@@ -230,12 +262,48 @@ export default function SessionScreen() {
         </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.deleteSessionBtn} onPress={handleDeleteSession} disabled={deleteSession.isPending}>
-          {deleteSession.isPending
-            ? <ActivityIndicator color={colors.accent} size="small" />
-            : <Text style={styles.deleteSessionBtnText}>ELIMINA ALLENAMENTO</Text>
-          }
-        </TouchableOpacity>
+        {isEditingDate && (
+          <View style={styles.dateEditor}>
+            <TextInput
+              style={styles.dateInput}
+              value={dateInput}
+              onChangeText={value => setDateInput(formatDateInput(value))}
+              placeholder="YYYY-MM-DD"
+              placeholderTextColor={colors.textDim}
+              keyboardType="number-pad"
+              maxLength={10}
+              autoCapitalize="none"
+            />
+            <TouchableOpacity
+              style={styles.saveDateBtn}
+              onPress={handleUpdateDate}
+              disabled={updateSessionDate.isPending}
+            >
+              {updateSessionDate.isPending
+                ? <ActivityIndicator color={colors.text} size="small" />
+                : <Text style={styles.saveDateBtnText}>SALVA</Text>
+              }
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.cancelDateBtn} onPress={() => setIsEditingDate(false)}>
+              <Text style={styles.cancelDateBtnText}>ANNULLA</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        <View style={styles.footerActions}>
+          <TouchableOpacity
+            style={styles.changeDateBtn}
+            onPress={startEditingDate}
+            disabled={updateSessionDate.isPending}
+          >
+            <Text style={styles.changeDateBtnText}>CAMBIA DATA</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.deleteSessionBtn} onPress={handleDeleteSession} disabled={deleteSession.isPending}>
+            {deleteSession.isPending
+              ? <ActivityIndicator color={colors.accent} size="small" />
+              : <Text style={styles.deleteSessionBtnText}>ELIMINA ALLENAMENTO</Text>
+            }
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ExercisePicker visible={showPicker} onClose={() => setShowPicker(false)} onSelect={handleAddExercise} />
@@ -279,7 +347,26 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 13, color: colors.textMuted, letterSpacing: 1 },
   emptyBtn: { marginTop: 8, borderWidth: 1, borderColor: colors.accent, paddingHorizontal: 24, paddingVertical: 12 },
   emptyBtnText: { fontSize: 11, fontWeight: '900', color: colors.accent, letterSpacing: 3 },
-  footer: { padding: 16, borderTopWidth: 1, borderTopColor: colors.border },
-  deleteSessionBtn: { borderWidth: 1, borderColor: colors.accent, paddingVertical: 12, alignItems: 'center' },
-  deleteSessionBtnText: { fontSize: 11, fontWeight: '900', color: colors.accent, letterSpacing: 3 },
+  footer: { padding: 16, borderTopWidth: 1, borderTopColor: colors.border, gap: 12 },
+  footerActions: { flexDirection: 'row', gap: 12 },
+  changeDateBtn: { flex: 1, borderWidth: 1, borderColor: colors.border, paddingVertical: 12, alignItems: 'center' },
+  changeDateBtnText: { fontSize: 11, fontWeight: '900', color: colors.textMuted, letterSpacing: 3 },
+  deleteSessionBtn: { flex: 1, borderWidth: 1, borderColor: colors.accent, paddingVertical: 12, alignItems: 'center' },
+  deleteSessionBtnText: { fontSize: 10, fontWeight: '900', color: colors.accent, letterSpacing: 1 },
+  dateEditor: { flexDirection: 'row', gap: 8 },
+  dateInput: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    color: colors.text,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 13,
+    letterSpacing: 1,
+  },
+  saveDateBtn: { borderWidth: 1, borderColor: colors.accent, backgroundColor: colors.accent, paddingHorizontal: 14, justifyContent: 'center', alignItems: 'center' },
+  saveDateBtnText: { fontSize: 10, fontWeight: '900', color: colors.text, letterSpacing: 2 },
+  cancelDateBtn: { borderWidth: 1, borderColor: colors.border, paddingHorizontal: 12, justifyContent: 'center', alignItems: 'center' },
+  cancelDateBtnText: { fontSize: 10, fontWeight: '900', color: colors.textMuted, letterSpacing: 2 },
 })

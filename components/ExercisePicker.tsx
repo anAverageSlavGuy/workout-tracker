@@ -144,7 +144,8 @@ export function ExercisePicker({ visible, onClose, onSelect }: Props) {
         <FlatList
           data={sections}
           keyExtractor={([group]) => group}
-          contentContainerStyle={sections.length === 0 ? { paddingTop: 40 } : undefined}
+          style={styles.exerciseList}
+          contentContainerStyle={sections.length === 0 ? styles.emptyListContent : styles.listContent}
           ListEmptyComponent={
             <View style={styles.emptyState}>
               <Text style={styles.emptyText}>Nessun esercizio trovato</Text>
@@ -218,11 +219,12 @@ const styles = StyleSheet.create({
   searchIcon: { color: colors.textMuted, fontSize: 18 },
   search: { flex: 1, color: colors.text, fontSize: 14 },
   equipmentScroll: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    maxHeight: 49,
     backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
-  equipmentContent: { marginBottom: 24, gap: 8, paddingHorizontal: 0 },
+  equipmentContent: { gap: 8, paddingHorizontal: 16, paddingVertical: 10, alignItems: "center" },
   equipmentChip: {
     borderWidth: 1,
     borderColor: colors.border,
@@ -245,6 +247,9 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   equipmentChipTextActive: { color: colors.bg },
+  exerciseList: { flex: 1 },
+  listContent: { paddingTop: 8, paddingBottom: 24 },
+  emptyListContent: { flexGrow: 1, paddingTop: 40 },
   groupHeader: {
     flexDirection: "row",
     alignItems: "center",

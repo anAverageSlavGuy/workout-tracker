@@ -1,42 +1,71 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
+  KeyboardAvoidingView, Platform, ActivityIndicator,
 } from 'react-native'
 import { supabase } from '../../lib/supabase'
 import { colors } from '../../constants/colors'
 
 type Tab = 'login' | 'register'
+type Toast = { message: string; tone: 'success' | 'error' | 'info' }
 
 export default function LoginScreen() {
   const [tab, setTab] = useState<Tab>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [toast, setToast] = useState<Toast | null>(null)
+
+  useEffect(() => {
+    if (!toast) return
+    const timeout = setTimeout(() => setToast(null), 3500)
+    return () => clearTimeout(timeout)
+  }, [toast])
+
+  function showToast(message: string, tone: Toast['tone'] = 'info') {
+    setToast({ message, tone })
+  }
+
+  const toastToneStyle = toast?.tone === 'success'
+    ? styles.toastSuccess
+    : toast?.tone === 'error'
+      ? styles.toastError
+      : styles.toastInfo
 
   async function handleLogin() {
     if (!email || !password) return
     setLoading(true)
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
     setLoading(false)
-    if (error) Alert.alert('Errore', error.message)
+    if (error) showToast(error.message, 'error')
   }
 
   async function handleRegister() {
-    if (!email || !password) return
-    if (password.length < 6) { Alert.alert('Errore', 'La password deve essere almeno 6 caratteri'); return }
+    if (!email || !password) {
+      showToast('Inserisci email e password per registrarti.', 'info')
+      return
+    }
+    if (password.length < 6) {
+      showToast('La password deve essere almeno 6 caratteri.', 'error')
+      return
+    }
     setLoading(true)
     const { error } = await supabase.auth.signUp({ email: email.trim(), password })
     setLoading(false)
-    if (error) Alert.alert('Errore', error.message)
-    else Alert.alert('Controlla la tua email', 'Abbiamo inviato un link di conferma.')
+    if (error) showToast(error.message, 'error')
+    else showToast('Registrazione avviata. Controlla la tua email.', 'success')
   }
 
   async function handleReset() {
-    if (!email) { Alert.alert('Inserisci la tua email prima'); return }
+    if (!email) {
+      showToast('Inserisci la tua email prima.', 'info')
+      return
+    }
+    setLoading(true)
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim())
-    if (error) Alert.alert('Errore', error.message)
-    else Alert.alert('Email inviata', 'Controlla la tua casella di posta.')
+    setLoading(false)
+    if (error) showToast(error.message, 'error')
+    else showToast('Email di reset inviata. Controlla la posta.', 'success')
   }
 
   return (
@@ -52,7 +81,7 @@ export default function LoginScreen() {
           <View style={styles.ornamentLine} />
         </View>
 
-        <Text style={styles.title}>IRON{'\n'}RITE</Text>
+        <Text style={styles.title}>ASCENT</Text>
         <Text style={styles.subtitle}>track your ascension</Text>
 
         <View style={styles.ornamentMid}>
@@ -117,6 +146,12 @@ export default function LoginScreen() {
           <View style={styles.ornamentLine} />
         </View>
       </View>
+
+      {toast && (
+        <View style={[styles.toast, toastToneStyle]}>
+          <Text style={styles.toastText}>{toast.message}</Text>
+        </View>
+      )}
     </KeyboardAvoidingView>
   )
 }
@@ -152,4 +187,18 @@ const styles = StyleSheet.create({
   },
   primaryBtnText: { fontSize: 13, fontWeight: '900', color: colors.text, letterSpacing: 4 },
   forgotText: { textAlign: 'center', color: colors.textMuted, fontSize: 12, marginTop: -4, letterSpacing: 1 },
+  toast: {
+    position: 'absolute',
+    left: 24,
+    right: 24,
+    bottom: 40,
+    borderRadius: 2,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  toastSuccess: { backgroundColor: '#12301f', borderColor: '#2f8f5b' },
+  toastError: { backgroundColor: '#35121a', borderColor: colors.danger },
+  toastInfo: { backgroundColor: colors.surfaceHigh, borderColor: colors.border },
+  toastText: { color: colors.text, fontSize: 13, fontWeight: '700', letterSpacing: 0.5, textAlign: 'center' },
 })

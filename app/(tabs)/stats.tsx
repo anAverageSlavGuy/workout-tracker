@@ -40,28 +40,48 @@ export default function StatsScreen() {
     { key: 'volume', label: 'VOLUME' },
   ]
 
-  const progressionData = selectedExercise
+  const progressionByDate = selectedExercise
     ? sessions
         .flatMap(s => (s.session_sets ?? [])
           .filter(ss => ss.exercise_id === selectedExercise.id)
           .map(ss => ({ date: s.date, orm: epley1RM(ss.weight, ss.reps), weight: ss.weight, reps: ss.reps }))
         )
         .sort((a, b) => a.date.localeCompare(b.date))
-        .reduce<Array<{ x: number; y: number; label: string }>>((acc, cur) => {
-          const existing = acc.find(p => p.label === cur.date)
-          const entry = { x: acc.length, y: cur.orm, label: cur.date }
-          if (existing) { existing.y = Math.max(existing.y, cur.orm) } else { acc.push(entry) }
+        .reduce<Array<{ date: string; orm: number; maxWeight: number; repsAtMaxWeight: number }>>((acc, cur) => {
+          const existing = acc.find(p => p.date === cur.date)
+          if (existing) {
+            existing.orm = Math.max(existing.orm, cur.orm)
+            if (cur.weight > existing.maxWeight || (cur.weight === existing.maxWeight && cur.reps > existing.repsAtMaxWeight)) {
+              existing.maxWeight = cur.weight
+              existing.repsAtMaxWeight = cur.reps
+            }
+          } else {
+            acc.push({ date: cur.date, orm: cur.orm, maxWeight: cur.weight, repsAtMaxWeight: cur.reps })
+          }
           return acc
         }, [])
     : []
 
-  if (selectedExercise && progressionData.length > 0) {
-    console.log('Selected exercise:', selectedExercise.name)
-    console.log('Progression data:', progressionData)
-    const rawData = sessions.flatMap(s => (s.session_sets ?? []).filter(ss => ss.exercise_id === selectedExercise.id).map(ss => ({ date: s.date, weight: ss.weight, reps: ss.reps, orm: epley1RM(ss.weight, ss.reps) })))
-    console.log('Raw data before reduce:', rawData)
-  }
+  const progressionData = progressionByDate.map((d, index) => ({
+    x: index,
+    y: d.orm,
+    label: d.date,
+  }))
 
+  const latestProgress = progressionByDate.at(-1)
+  const bestProgress = progressionByDate.reduce(
+    (best, current) => current.orm > best.orm ? current : best,
+    progressionByDate[0] ?? { date: '', orm: 0, maxWeight: 0, repsAtMaxWeight: 0 }
+  )
+  const bestWeightSet = progressionByDate.reduce(
+    (best, current) => {
+      if (current.maxWeight > best.maxWeight) return current
+      if (current.maxWeight === best.maxWeight && current.repsAtMaxWeight > best.repsAtMaxWeight) return current
+      return best
+    },
+    progressionByDate[0] ?? { date: '', orm: 0, maxWeight: 0, repsAtMaxWeight: 0 }
+  )
+  
   const weeklyData = (() => {
     const weeks = eachWeekOfInterval(
       { start: subWeeks(new Date(), 11), end: new Date() },
@@ -159,6 +179,16 @@ export default function StatsScreen() {
             </TouchableOpacity>
             {progressionData.length > 1 ? (
               <>
+                <View style={styles.progressSummary}>
+                  <View style={styles.progressCard}>
+                    <Text style={styles.progressCardLabel}>1RM TEORICO</Text>
+                    <Text style={styles.progressCardValue}>{Math.round(bestProgress.orm)} kg</Text>
+                  </View>
+                  <View style={styles.progressCard}>
+                    <Text style={styles.progressCardLabel}>SET PIÙ PESANTE</Text>
+                    <Text style={styles.progressCardValue}>{Math.round(bestWeightSet.maxWeight)} kg × {bestWeightSet.repsAtMaxWeight}</Text>
+                  </View>
+                </View>
                 <Text style={styles.chartLabel}>1RM STIMATO (kg) — Formula Epley</Text>
                 {(() => {
                   const yValues = progressionData.map(d => d.y)
@@ -294,6 +324,20 @@ const styles = StyleSheet.create({
   picker: { borderWidth: 1, borderColor: colors.border, padding: 16, marginBottom: 16, backgroundColor: colors.surface },
   pickerLabel: { fontSize: 9, color: colors.textMuted, letterSpacing: 3, marginBottom: 8 },
   pickerText: { color: colors.text, fontSize: 14 },
+  progressSummary: { flexDirection: 'row', flexWrap: 'wrap', rowGap: 8, marginBottom: 16 },
+  progressCard: {
+    width: '50%',
+    minHeight: 72,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    justifyContent: 'space-between',
+  },
+  progressCardWide: { width: '100%' },
+  progressCardLabel: { fontSize: 8, color: colors.textMuted, fontWeight: '700', letterSpacing: 2 },
+  progressCardValue: { fontSize: 20, color: colors.text, fontWeight: '900', letterSpacing: 1 },
   empty: { textAlign: 'center', color: colors.textMuted, marginTop: 40, paddingBottom: 40, letterSpacing: 2, fontSize: 12 },
   pickerModal: { flex: 1, backgroundColor: colors.bg },
   pickerHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16 },
