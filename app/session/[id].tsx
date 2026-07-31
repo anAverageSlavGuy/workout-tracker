@@ -8,6 +8,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { format } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { useSession, useAddSet, useUpdateSet, useDeleteSet, useDeleteSession, useUpdateSessionDate } from '../../hooks/useSessions'
+import { useSwipeBack } from '../../hooks/useSwipeBack'
 import { ExercisePicker } from '../../components/ExercisePicker'
 import { SetRow } from '../../components/SetRow'
 import { MuscleActivationBadges } from '../../components/MuscleActivationBadges'
@@ -19,6 +20,10 @@ export default function SessionScreen() {
   const router = useRouter()
 
   const { data: session, isLoading } = useSession(id)
+
+  const swipeBackHandler = useSwipeBack({
+    onSwipe: () => handleBack(),
+  })
   const addSet = useAddSet()
   const updateSet = useUpdateSet()
   const deleteSet = useDeleteSet()
@@ -161,7 +166,7 @@ export default function SessionScreen() {
   }
 
   return (
-    <View style={styles.safe}>
+    <View style={styles.safe} {...swipeBackHandler.panHandlers}>
       <View style={styles.header}>
           <Pressable onPress={handleBack} style={styles.backBtn} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} onLongPress={() => { if (Platform.OS === 'web') window.history.back() }}>
             <Text style={styles.backChar}>↓</Text>

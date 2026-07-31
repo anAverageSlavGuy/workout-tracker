@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Alert, Platform, ActivityIndi
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { useAuth } from '../../lib/auth'
+import { useIsAdmin } from '../../hooks/useAdmin'
 import { supabase } from '../../lib/supabase'
 import { colors } from '../../constants/colors'
 
@@ -10,6 +11,9 @@ export default function ProfileScreen() {
   const { user } = useAuth()
   const router = useRouter()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const { data: isAdmin } = useIsAdmin()
+
+  console.log('isAdmin', isAdmin)
 
   async function handleSignOut() {
     const confirmed = Platform.OS === 'web'
@@ -44,6 +48,12 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {isAdmin && (
+          <TouchableOpacity style={styles.adminBtn} onPress={() => router.push('/admin')}>
+            <Text style={styles.adminBtnText}>⚙️ ADMIN</Text>
+          </TouchableOpacity>
+        )}
+
         <TouchableOpacity style={[styles.signOutBtn, isLoggingOut && styles.signOutBtnDisabled]} onPress={handleSignOut} disabled={isLoggingOut}>
           {isLoggingOut
             ? <ActivityIndicator color={colors.accent} />
@@ -73,6 +83,8 @@ const styles = StyleSheet.create({
   cardAccent: { width: 2, backgroundColor: colors.accent },
   label: { fontSize: 9, color: colors.textMuted, letterSpacing: 3, marginBottom: 8 },
   value: { fontSize: 15, color: colors.text },
+  adminBtn: { borderWidth: 1, borderColor: colors.accent, paddingVertical: 12, alignItems: 'center', marginTop: 8, backgroundColor: colors.accentDim },
+  adminBtnText: { color: colors.accent, fontSize: 11, fontWeight: '900', letterSpacing: 3 },
   signOutBtn: { borderWidth: 1, borderColor: colors.accent, paddingVertical: 12, alignItems: 'center', marginTop: 16 },
   signOutBtnDisabled: { opacity: 0.5 },
   signOutText: { color: colors.accent, fontSize: 11, fontWeight: '900', letterSpacing: 4 },
