@@ -29,6 +29,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="templates" options={{ title: 'Schede', tabBarIcon: ({ focused }) => icon('list', focused) }} />
       <Tabs.Screen name="history" options={{ title: 'Storico', tabBarIcon: ({ focused }) => icon('time', focused) }} />
       <Tabs.Screen name="stats" options={{ title: 'Stats', tabBarIcon: ({ focused }) => icon('bar-chart', focused) }} />
+      <Tabs.Screen name="nutrition" options={{ title: 'Nutrition', tabBarIcon: ({ focused }) => icon('nutrition', focused) }} />
       <Tabs.Screen name="profile" options={{ title: 'Profilo', tabBarIcon: ({ focused }) => icon('person', focused) }} />
     </Tabs>
   )

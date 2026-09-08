@@ -63,6 +63,35 @@ export interface SessionSet {
   exercises?: Exercise
 }
 
+export type MealType = 'colazione' | 'pranzo' | 'cena' | 'spuntino' | 'fuori_pasto'
+
+export interface NutritionProfile {
+  user_id: string
+  calorie_goal: number
+  protein_goal: number
+  carbs_goal: number
+  fat_goal: number
+  created_at: string
+  updated_at: string
+}
+
+export interface NutritionMeal {
+  id: string
+  user_id: string
+  date: string
+  meal_type: MealType
+  input_text: string
+  transcript: string | null
+  summary: string
+  calories: number
+  protein: number
+  carbs: number
+  fat: number
+  confidence: number | null
+  source: 'ai_import' | 'manual'
+  created_at: string
+}
+
 export function epley1RM(weight: number, reps: number): number {
   if (reps === 1) return weight
   return Math.round(weight * (1 + reps / 30))

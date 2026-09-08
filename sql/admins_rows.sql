@@ -1,0 +1,1 @@
+INSERT INTO "public"."admins" ("user_id", "created_at") VALUES ('bf678a34-681b-44d7-aa22-9d8f50953bab', '2026-07-31 05:01:58.822055+00');
