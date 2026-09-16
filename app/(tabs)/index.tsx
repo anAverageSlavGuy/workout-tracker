@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     fontSize: 44, fontWeight: '900', color: colors.text, letterSpacing: 12,
     textShadowColor: colors.accent, textShadowRadius: 16, textShadowOffset: { width: 0, height: 0 },
   },
-  greeting: { fontSize: 13, color: colors.silver, letterSpacing: 3, textTransform: 'uppercase' },
+  greeting: { fontSize: 13, color: colors.text, letterSpacing: 3, textTransform: 'uppercase' },
   dateText: { fontSize: 11, color: colors.textMuted, letterSpacing: 2, textTransform: 'capitalize' },
   startBtn: {
     borderWidth: 1, borderColor: colors.accent, backgroundColor: colors.accentDim,

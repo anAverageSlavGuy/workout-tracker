@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -12,14 +13,15 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
-import { format, subDays } from 'date-fns'
+import { addDays, format, subDays } from 'date-fns'
 import { it } from 'date-fns/locale'
 import Svg, { Circle } from 'react-native-svg'
 import { colors } from '../../constants/colors'
+import { ToastHost, useToast } from '../../components/Toast'
 import { useCreateNutritionMeal, useDeleteNutritionMeal, useNutritionMeals, useNutritionProfile } from '../../hooks/useNutrition'
 import { MealType, NutritionMeal } from '../../lib/types'
 
-type ViewMode = 'today' | 'history'
+type ViewMode = 'today' | 'history' | 'day'
 
 type ImportedMeal = {
   date?: unknown
@@ -40,8 +42,6 @@ const mealOptions: Array<{ key: MealType; label: string }> = [
   { key: 'spuntino', label: 'SPUNTINO' },
   { key: 'fuori_pasto', label: 'FUORI' },
 ]
-
-const mealTypes = mealOptions.map(option => option.key)
 
 const macroColors = {
   calories: colors.accent,
@@ -71,6 +71,21 @@ const aiPromptTemplate = `A [colazione] ho mangiato [sei gocciole Pavesi e 200 m
 
 function todayIso() {
   return format(new Date(), 'yyyy-MM-dd')
+}
+
+function isValidIsoDate(date: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return false
+  return !Number.isNaN(new Date(`${date}T00:00:00`).getTime())
+}
+
+function shiftIsoDate(date: string, days: number) {
+  if (!isValidIsoDate(date)) return todayIso()
+  const shifted = format(addDays(new Date(`${date}T00:00:00`), days), 'yyyy-MM-dd')
+  return shifted > todayIso() ? todayIso() : shifted
+}
+
+function shortDateLabel(date: string) {
+  return isValidIsoDate(date) ? format(new Date(`${date}T00:00:00`), 'dd/MM') : date
 }
 
 function totals(meals: NutritionMeal[]) {
@@ -135,8 +150,8 @@ function normalizeImportedMeal(raw: ImportedMeal, selectedDate: string, selected
 }
 
 function ProgressRing({ label, value, goal, unit, color }: { label: string; value: number; goal: number; unit: string; color: string }) {
-  const size = 112
-  const stroke = 8
+  const size = 84
+  const stroke = 6
   const radius = (size - stroke) / 2
   const circumference = 2 * Math.PI * radius
   const pct = goal > 0 ? Math.min(value / goal, 1.25) : 0
@@ -167,16 +182,47 @@ function ProgressRing({ label, value, goal, unit, color }: { label: string; valu
   )
 }
 
-function MealCard({ meal, onDelete }: { meal: NutritionMeal; onDelete: (id: string) => void }) {
+function DateSelector({ date, onChange }: { date: string; onChange: (date: string) => void }) {
+  const isFutureOrToday = date >= todayIso()
+
   return (
-    <View style={styles.mealCard}>
+    <View style={styles.dateSelector}>
+      <TouchableOpacity style={styles.dateArrowBtn} onPress={() => onChange(shiftIsoDate(date, -1))}>
+        <Ionicons name="chevron-back" size={18} color={colors.accent} />
+      </TouchableOpacity>
+      <TextInput
+        style={styles.dateInput}
+        value={date}
+        onChangeText={value => onChange(value > todayIso() ? todayIso() : value)}
+        placeholder="YYYY-MM-DD"
+        placeholderTextColor={colors.textDim}
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
+      <TouchableOpacity style={styles.dateTodayBtn} onPress={() => onChange(todayIso())}>
+        <Text style={styles.dateTodayText}>OGGI</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.dateArrowBtn, isFutureOrToday && styles.disabled]}
+        onPress={() => onChange(shiftIsoDate(date, 1))}
+        disabled={isFutureOrToday}
+      >
+        <Ionicons name="chevron-forward" size={18} color={colors.accent} />
+      </TouchableOpacity>
+    </View>
+  )
+}
+
+function MealCard({ meal, onDelete, onPress }: { meal: NutritionMeal; onDelete: (id: string) => void; onPress?: () => void }) {
+  return (
+    <TouchableOpacity style={styles.mealCard} onPress={onPress} activeOpacity={onPress ? 0.75 : 1}>
       <View style={styles.mealTop}>
         <View style={{ flex: 1 }}>
           <Text style={styles.mealType}>{meal.meal_type.replace('_', ' ').toUpperCase()}</Text>
           <Text style={styles.mealSummary} numberOfLines={1}>{meal.summary}</Text>
         </View>
         <TouchableOpacity style={styles.iconBtn} onPress={() => onDelete(meal.id)}>
-          <Ionicons name="trash-outline" size={16} color={colors.accent} />
+          <Ionicons name="trash-outline" size={16} color={colors.danger} />
         </TouchableOpacity>
       </View>
       <View style={styles.macroRow}>
@@ -186,14 +232,19 @@ function MealCard({ meal, onDelete }: { meal: NutritionMeal; onDelete: (id: stri
         <Text style={styles.macroText}>F {Math.round(meal.fat)}g</Text>
         {meal.confidence !== null && <Text style={styles.confidence}>{meal.confidence}%</Text>}
       </View>
-    </View>
+    </TouchableOpacity>
   )
 }
 
 export default function NutritionScreen() {
   const [mode, setMode] = useState<ViewMode>('today')
   const [selectedMealType, setSelectedMealType] = useState<MealType>('pranzo')
+  const [selectedEntryDate, setSelectedEntryDate] = useState(todayIso())
+  const [selectedHistoryDate, setSelectedHistoryDate] = useState<string | null>(null)
   const [jsonInput, setJsonInput] = useState('')
+  const [pendingMeal, setPendingMeal] = useState<ReturnType<typeof normalizeImportedMeal> | null>(null)
+  const { toast, showToast } = useToast(2200)
+  const lastClipboardTextRef = useRef('')
   const currentDate = todayIso()
   const from = format(subDays(new Date(), 30), 'yyyy-MM-dd')
 
@@ -202,8 +253,13 @@ export default function NutritionScreen() {
   const createMeal = useCreateNutritionMeal()
   const deleteMeal = useDeleteNutritionMeal()
 
-  const todaysMeals = useMemo(() => meals.filter(meal => meal.date === currentDate), [meals, currentDate])
-  const todayTotals = useMemo(() => totals(todaysMeals), [todaysMeals])
+  const selectedDayMeals = useMemo(() => meals.filter(meal => meal.date === selectedEntryDate), [meals, selectedEntryDate])
+  const selectedDayTotals = useMemo(() => totals(selectedDayMeals), [selectedDayMeals])
+  const historyDetailMeals = useMemo(
+    () => selectedHistoryDate ? meals.filter(meal => meal.date === selectedHistoryDate) : [],
+    [meals, selectedHistoryDate]
+  )
+  const historyDetailTotals = useMemo(() => totals(historyDetailMeals), [historyDetailMeals])
   const groupedHistory = useMemo(() => {
     const byDate: Record<string, NutritionMeal[]> = {}
     meals
@@ -217,17 +273,69 @@ export default function NutritionScreen() {
 
   async function importMeal() {
     try {
+      if (!isValidIsoDate(selectedEntryDate)) {
+        throw new Error('Inserisci una data valida nel formato YYYY-MM-DD')
+      }
+      if (selectedEntryDate > currentDate) {
+        throw new Error('Non puoi inserire pasti nel futuro')
+      }
       const parsed = parseJsonInput(jsonInput)
       const firstMeal = Array.isArray(parsed) ? parsed[0] : parsed
       if (!firstMeal || typeof firstMeal !== 'object') {
         throw new Error('Incolla un JSON oggetto valido')
       }
 
-      await createMeal.mutateAsync(normalizeImportedMeal(firstMeal as ImportedMeal, currentDate, selectedMealType))
+      await createMeal.mutateAsync(normalizeImportedMeal(firstMeal as ImportedMeal, selectedEntryDate, selectedMealType))
       setJsonInput('')
     } catch (error) {
       const message = error instanceof Error ? error.message : 'JSON non valido'
       notify('Import non riuscito', message)
+    }
+  }
+
+  async function savePendingMeal() {
+    if (!pendingMeal) return
+    try {
+      await createMeal.mutateAsync(pendingMeal)
+      setPendingMeal(null)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Non sono riuscito a salvare il pasto'
+      notify('Salvataggio non riuscito', message)
+    }
+  }
+
+  async function readClipboardForMeal(force = false, showErrors = false) {
+    if (Platform.OS !== 'web' || mode !== 'today') return
+    if (!navigator?.clipboard?.readText) {
+      if (showErrors) notify('Clipboard non disponibile', 'Il browser non permette la lettura automatica degli appunti.')
+      return
+    }
+
+    try {
+      const clipboardText = await navigator.clipboard.readText()
+      if (!clipboardText.trim()) return
+      if (!force && clipboardText === lastClipboardTextRef.current) return
+      if (!isValidIsoDate(selectedEntryDate)) {
+        throw new Error('Inserisci una data valida nel formato YYYY-MM-DD')
+      }
+      if (selectedEntryDate > currentDate) {
+        throw new Error('Non puoi inserire pasti nel futuro')
+      }
+
+      const parsed = parseJsonInput(clipboardText)
+      const firstMeal = Array.isArray(parsed) ? parsed[0] : parsed
+      if (!firstMeal || typeof firstMeal !== 'object') {
+        throw new Error('Il contenuto copiato non è un JSON oggetto valido')
+      }
+
+      const meal = normalizeImportedMeal(firstMeal as ImportedMeal, selectedEntryDate, selectedMealType)
+      lastClipboardTextRef.current = clipboardText
+      setPendingMeal(meal)
+    } catch (error) {
+      if (showErrors) {
+        const message = error instanceof Error ? error.message : 'JSON non valido'
+        notify('Clipboard non importabile', message)
+      }
     }
   }
 
@@ -239,11 +347,30 @@ export default function NutritionScreen() {
       }
 
       await navigator.clipboard.writeText(aiPromptTemplate)
-      notify('Template copiato', 'Ora puoi incollarlo nella chat AI.')
+      showToast('Template copiato', 'success')
     } catch {
       notify('Copia non riuscita', 'Il browser non ha permesso l’accesso alla clipboard.')
     }
   }
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || mode !== 'today') return
+
+    const checkClipboard = () => {
+      void readClipboardForMeal(false, false)
+    }
+    const checkClipboardWhenVisible = () => {
+      if (document.visibilityState === 'visible') checkClipboard()
+    }
+
+    checkClipboard()
+    window.addEventListener('focus', checkClipboard)
+    document.addEventListener('visibilitychange', checkClipboardWhenVisible)
+    return () => {
+      window.removeEventListener('focus', checkClipboard)
+      document.removeEventListener('visibilitychange', checkClipboardWhenVisible)
+    }
+  }, [mode, selectedMealType, selectedEntryDate])
 
   const busy = createMeal.isPending
   const calorieGoal = profile?.calorie_goal ?? 2000
@@ -265,8 +392,15 @@ export default function NutritionScreen() {
             </View>
             <View style={styles.modeTabs}>
               {(['today', 'history'] as ViewMode[]).map(tab => (
-                <TouchableOpacity key={tab} style={[styles.modeTab, mode === tab && styles.modeTabActive]} onPress={() => setMode(tab)}>
-                  <Text style={[styles.modeTabText, mode === tab && styles.modeTabTextActive]}>{tab === 'today' ? 'OGGI' : 'STORICO'}</Text>
+                <TouchableOpacity
+                  key={tab}
+                  style={[styles.modeTab, (mode === tab || (tab === 'history' && mode === 'day')) && styles.modeTabActive]}
+                  onPress={() => {
+                    setMode(tab)
+                    if (tab === 'history') setSelectedHistoryDate(null)
+                  }}
+                >
+                  <Text style={[styles.modeTabText, (mode === tab || (tab === 'history' && mode === 'day')) && styles.modeTabTextActive]}>{tab === 'today' ? 'OGGI' : 'STORICO'}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -276,13 +410,15 @@ export default function NutritionScreen() {
         {mode === 'today' && (
           <>
             <View style={styles.ringGrid}>
-              <ProgressRing label="KCAL" value={todayTotals.calories} goal={calorieGoal} unit="" color={macroColors.calories} />
-              <ProgressRing label="PRO" value={todayTotals.protein} goal={proteinGoal} unit="g" color={macroColors.protein} />
-              <ProgressRing label="CARBO" value={todayTotals.carbs} goal={carbsGoal} unit="g" color={macroColors.carbs} />
-              <ProgressRing label="GRASSI" value={todayTotals.fat} goal={fatGoal} unit="g" color={macroColors.fat} />
+              <ProgressRing label="KCAL" value={selectedDayTotals.calories} goal={calorieGoal} unit="kcal" color={macroColors.calories} />
+              <ProgressRing label="PRO" value={selectedDayTotals.protein} goal={proteinGoal} unit="g" color={macroColors.protein} />
+              <ProgressRing label="CARBO" value={selectedDayTotals.carbs} goal={carbsGoal} unit="g" color={macroColors.carbs} />
+              <ProgressRing label="GRASSI" value={selectedDayTotals.fat} goal={fatGoal} unit="g" color={macroColors.fat} />
             </View>
 
             <View style={styles.composer}>
+              <DateSelector date={selectedEntryDate} onChange={setSelectedEntryDate} />
+
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.mealTypeRow}>
                 {mealOptions.map(option => (
                   <TouchableOpacity
@@ -316,7 +452,7 @@ export default function NutritionScreen() {
                   onPress={importMeal}
                   disabled={!jsonInput.trim() || busy}
                 >
-                  {busy ? <ActivityIndicator color={colors.bg} /> : <Ionicons name="save" size={18} color={colors.bg} />}
+                  {busy ? <ActivityIndicator color={colors.text} /> : <Ionicons name="save" size={18} color={colors.text} />}
                   <Text style={styles.importBtnText}>SALVA</Text>
                 </TouchableOpacity>
               </View>
@@ -324,14 +460,16 @@ export default function NutritionScreen() {
 
             <View style={styles.sectionHeader}>
               <View style={styles.sectionDot} />
-              <Text style={styles.sectionTitle}>PASTI DI OGGI</Text>
+              <Text style={styles.sectionTitle}>
+                {selectedEntryDate === currentDate ? 'PASTI DI OGGI' : `PASTI DEL ${shortDateLabel(selectedEntryDate)}`}
+              </Text>
             </View>
             {isLoading ? (
               <ActivityIndicator color={colors.accent} />
-            ) : todaysMeals.length === 0 ? (
-              <Text style={styles.empty}>Nessun pasto inserito oggi</Text>
+            ) : selectedDayMeals.length === 0 ? (
+              <Text style={styles.empty}>Nessun pasto inserito per questa data</Text>
             ) : (
-              todaysMeals.map(meal => <MealCard key={meal.id} meal={meal} onDelete={deleteMeal.mutate} />)
+              selectedDayMeals.map(meal => <MealCard key={meal.id} meal={meal} onDelete={deleteMeal.mutate} />)
             )}
           </>
         )}
@@ -348,13 +486,82 @@ export default function NutritionScreen() {
                     <Text style={styles.dayDate}>{format(new Date(date), 'dd MMM yyyy', { locale: it }).toUpperCase()}</Text>
                     <Text style={styles.dayKcal}>{Math.round(dayTotals.calories)} / {calorieGoal} kcal</Text>
                   </View>
-                  {dateMeals.map(meal => <MealCard key={meal.id} meal={meal} onDelete={deleteMeal.mutate} />)}
+                  {dateMeals.map(meal => (
+                    <MealCard
+                      key={meal.id}
+                      meal={meal}
+                      onDelete={deleteMeal.mutate}
+                      onPress={() => {
+                        setSelectedHistoryDate(date)
+                        setMode('day')
+                      }}
+                    />
+                  ))}
                 </View>
               )
             })}
           </View>
         )}
+
+        {mode === 'day' && selectedHistoryDate && (
+          <>
+            <TouchableOpacity style={styles.backToHistoryBtn} onPress={() => setMode('history')}>
+              <Ionicons name="chevron-back" size={18} color={colors.accent} />
+              <Text style={styles.backToHistoryText}>STORICO</Text>
+            </TouchableOpacity>
+            <View style={styles.dayDetailHeader}>
+              <Text style={styles.dayDetailTitle}>{format(new Date(`${selectedHistoryDate}T00:00:00`), 'EEEE d MMMM yyyy', { locale: it })}</Text>
+              <Text style={styles.dayKcal}>{Math.round(historyDetailTotals.calories)} / {calorieGoal} kcal</Text>
+            </View>
+            <View style={styles.ringGrid}>
+              <ProgressRing label="KCAL" value={historyDetailTotals.calories} goal={calorieGoal} unit="" color={macroColors.calories} />
+              <ProgressRing label="PRO" value={historyDetailTotals.protein} goal={proteinGoal} unit="g" color={macroColors.protein} />
+              <ProgressRing label="CARBO" value={historyDetailTotals.carbs} goal={carbsGoal} unit="g" color={macroColors.carbs} />
+              <ProgressRing label="GRASSI" value={historyDetailTotals.fat} goal={fatGoal} unit="g" color={macroColors.fat} />
+            </View>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionDot} />
+              <Text style={styles.sectionTitle}>PASTI DEL GIORNO</Text>
+            </View>
+            {historyDetailMeals.map(meal => <MealCard key={meal.id} meal={meal} onDelete={deleteMeal.mutate} />)}
+          </>
+        )}
       </ScrollView>
+
+      <Modal visible={!!pendingMeal} transparent animationType="fade" onRequestClose={() => setPendingMeal(null)}>
+        <View style={styles.modalBackdrop}>
+          <View style={styles.confirmModal}>
+            <View style={styles.modalHeader}>
+              <View style={styles.sectionDot} />
+              <Text style={styles.modalTitle}>JSON COPIATO</Text>
+            </View>
+            {pendingMeal && (
+              <>
+                <Text style={styles.modalMealType}>{pendingMeal.meal_type.replace('_', ' ').toUpperCase()}</Text>
+                <Text style={styles.modalSummary}>{pendingMeal.summary}</Text>
+                <View style={styles.modalMacros}>
+                  <Text style={styles.kcal}>{pendingMeal.calories} kcal</Text>
+                  <Text style={styles.macroText}>P {pendingMeal.protein}g</Text>
+                  <Text style={styles.macroText}>C {pendingMeal.carbs}g</Text>
+                  <Text style={styles.macroText}>F {pendingMeal.fat}g</Text>
+                  {pendingMeal.confidence !== null && <Text style={styles.confidence}>{pendingMeal.confidence}%</Text>}
+                </View>
+              </>
+            )}
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => setPendingMeal(null)}>
+                <Text style={styles.cancelBtnText}>ANNULLA</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.confirmBtn, busy && styles.disabled]} onPress={savePendingMeal} disabled={busy}>
+                {busy ? <ActivityIndicator color={colors.text} /> : <Ionicons name="save" size={17} color={colors.text} />}
+                <Text style={styles.confirmBtnText}>SALVA</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <ToastHost toast={toast} bottom={72} />
     </SafeAreaView>
   )
 }
@@ -376,24 +583,31 @@ const styles = StyleSheet.create({
   modeTabText: { fontSize: 9, color: colors.textMuted, fontWeight: '900', letterSpacing: 1 },
   modeTabTextActive: { color: colors.accent },
   ringGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  ringWrap: { width: '48%', minWidth: 146, alignItems: 'center', borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, paddingVertical: 14, gap: 8 },
+  ringWrap: { width: '48%', minWidth: 116, alignItems: 'center', borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, paddingVertical: 10, gap: 6 },
   ringSvg: { transform: [{ rotate: '0deg' }] },
-  ringCenter: { position: 'absolute', top: 42, alignItems: 'center', width: 112 },
-  ringPct: { color: colors.text, fontSize: 20, fontWeight: '900' },
-  ringValue: { color: colors.textMuted, fontSize: 10, marginTop: 2 },
-  ringLabel: { color: colors.textMuted, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  ringCenter: { position: 'absolute', top: 30, alignItems: 'center', width: 84 },
+  ringPct: { color: colors.text, fontSize: 16, fontWeight: '900' },
+  ringValue: { color: colors.textMuted, fontSize: 9, marginTop: 1 },
+  ringLabel: { color: colors.textMuted, fontSize: 8, fontWeight: '900', letterSpacing: 2 },
   composer: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: 14, gap: 12 },
+  dateSelector: { flexDirection: 'row', gap: 8, alignItems: 'center' },
+  dateArrowBtn: { width: 36, height: 36, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
+  dateInput: { flex: 1, height: 36, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.bg, color: colors.text, paddingHorizontal: 10, fontSize: 13, fontWeight: '700' },
+  dateTodayBtn: { height: 36, borderWidth: 1, borderColor: colors.accent, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accentDim },
+  dateTodayText: { color: colors.accent, fontSize: 9, fontWeight: '900', letterSpacing: 1 },
   mealTypeRow: { gap: 8 },
   mealTypeBtn: { height: 30, paddingHorizontal: 10, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
-  mealTypeBtnActive: { backgroundColor: colors.accent, borderColor: colors.accent },
+  mealTypeBtnActive: { backgroundColor: colors.accentDim, borderColor: colors.accent },
   mealTypeBtnText: { fontSize: 8, fontWeight: '900', letterSpacing: 1, color: colors.textMuted },
-  mealTypeBtnTextActive: { color: colors.bg },
+  mealTypeBtnTextActive: { color: colors.accent },
   messageInput: { minHeight: 154, maxHeight: 260, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.bg, color: colors.text, padding: 12, fontSize: 13, lineHeight: 18, textAlignVertical: 'top', fontFamily: Platform.OS === 'web' ? 'monospace' : undefined },
   actionRow: { flexDirection: 'row', gap: 10 },
   templateBtn: { flex: 1, minHeight: 44, borderWidth: 1, borderColor: colors.accent, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 },
   templateBtnText: { color: colors.accent, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  readClipboardBtn: { minHeight: 44, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6, paddingHorizontal: 10 },
+  readClipboardText: { color: colors.accent, fontSize: 10, fontWeight: '900', letterSpacing: 1 },
   importBtn: { minHeight: 44, minWidth: 110, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, paddingHorizontal: 14 },
-  importBtnText: { color: colors.bg, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  importBtnText: { color: colors.text, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   disabled: { opacity: 0.5 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
   sectionDot: { width: 5, height: 5, backgroundColor: colors.accent, transform: [{ rotate: '45deg' }] },
@@ -414,4 +628,20 @@ const styles = StyleSheet.create({
   dayHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },
   dayDate: { color: colors.text, fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   dayKcal: { color: colors.accent, fontSize: 11, fontWeight: '900' },
+  backToHistoryBtn: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 10, paddingVertical: 8 },
+  backToHistoryText: { color: colors.accent, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  dayDetailHeader: { gap: 6 },
+  dayDetailTitle: { color: colors.text, fontSize: 20, fontWeight: '900', letterSpacing: 1, textTransform: 'capitalize' },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.78)', alignItems: 'center', justifyContent: 'center', padding: 20 },
+  confirmModal: { width: '100%', maxWidth: 420, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: 18, gap: 14 },
+  modalHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  modalTitle: { color: colors.textMuted, fontSize: 10, fontWeight: '900', letterSpacing: 3 },
+  modalMealType: { color: colors.accent, fontSize: 9, fontWeight: '900', letterSpacing: 2 },
+  modalSummary: { color: colors.text, fontSize: 16, fontWeight: '700', lineHeight: 22 },
+  modalMacros: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center', borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 12 },
+  modalActions: { flexDirection: 'row', gap: 10, marginTop: 2 },
+  cancelBtn: { flex: 1, minHeight: 42, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
+  cancelBtnText: { color: colors.textMuted, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  confirmBtn: { flex: 1, minHeight: 42, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 },
+  confirmBtnText: { color: colors.text, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
 })

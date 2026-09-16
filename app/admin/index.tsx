@@ -408,6 +408,6 @@ const styles = StyleSheet.create({
   listItemText: { color: colors.text, fontSize: 13, fontWeight: '600' },
   listItemSub: { color: colors.textMuted, fontSize: 10, marginTop: 4 },
   deleteBtn: { padding: 8 },
-  deleteBtnText: { color: colors.textDim, fontSize: 14 },
+  deleteBtnText: { color: colors.danger, fontSize: 14 },
   empty: { textAlign: 'center', color: colors.textMuted, marginTop: 20, letterSpacing: 1 },
 })

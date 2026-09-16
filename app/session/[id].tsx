@@ -356,8 +356,8 @@ const styles = StyleSheet.create({
   footerActions: { flexDirection: 'row', gap: 12 },
   changeDateBtn: { flex: 1, borderWidth: 1, borderColor: colors.border, paddingVertical: 12, alignItems: 'center' },
   changeDateBtnText: { fontSize: 11, fontWeight: '900', color: colors.textMuted, letterSpacing: 3 },
-  deleteSessionBtn: { flex: 1, borderWidth: 1, borderColor: colors.accent, paddingVertical: 12, alignItems: 'center' },
-  deleteSessionBtnText: { fontSize: 10, fontWeight: '900', color: colors.accent, letterSpacing: 1 },
+  deleteSessionBtn: { flex: 1, borderWidth: 1, borderColor: colors.danger, paddingVertical: 12, alignItems: 'center' },
+  deleteSessionBtnText: { fontSize: 10, fontWeight: '900', color: colors.danger, letterSpacing: 1 },
   dateEditor: { flexDirection: 'row', gap: 8 },
   dateInput: {
     flex: 1,

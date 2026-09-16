@@ -186,7 +186,7 @@ export default function TemplatesScreen() {
               onPress={() => handleDelete(item)}
               style={styles.actionBtn}
             >
-              <Ionicons name="trash-outline" size={16} color={colors.textDim} />
+              <Ionicons name="trash-outline" size={16} color={colors.danger} />
             </TouchableOpacity>
           </View>
         )}
@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   checkboxActive: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.accentDim,
     borderColor: colors.accent,
   },
   exName: { fontSize: 14, color: colors.text },

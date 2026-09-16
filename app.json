@@ -13,7 +13,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#0a0a0a"
+        "backgroundColor": "#d9d9d9"
       }
     },
     "web": {
@@ -24,8 +24,8 @@
         "name": "ASCENT",
         "short_name": "ASCENT",
         "description": "Traccia i tuoi allenamenti e la progressione dei carichi",
-        "theme_color": "#0a0a0c",
-        "background_color": "#0a0a0c",
+        "theme_color": "#d9d9d9",
+        "background_color": "#d9d9d9",
         "display": "standalone",
         "orientation": "portrait"
       }

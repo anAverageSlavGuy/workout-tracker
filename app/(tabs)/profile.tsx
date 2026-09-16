@@ -2,9 +2,7 @@ import { useEffect, useState } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Platform, ActivityIndicator, TextInput, ScrollView } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { Ionicons } from '@expo/vector-icons'
 import { useAuth } from '../../lib/auth'
-import { useIsAdmin } from '../../hooks/useAdmin'
 import { useNutritionProfile, useUpsertNutritionProfile } from '../../hooks/useNutrition'
 import { supabase } from '../../lib/supabase'
 import { colors } from '../../constants/colors'
@@ -13,15 +11,12 @@ export default function ProfileScreen() {
   const { user } = useAuth()
   const router = useRouter()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const { data: isAdmin } = useIsAdmin()
   const { data: nutritionProfile, isLoading: isNutritionLoading } = useNutritionProfile()
   const upsertNutritionProfile = useUpsertNutritionProfile()
   const [calorieGoal, setCalorieGoal] = useState('2000')
   const [proteinGoal, setProteinGoal] = useState('120')
   const [carbsGoal, setCarbsGoal] = useState('250')
   const [fatGoal, setFatGoal] = useState('55')
-
-  console.log('isAdmin', isAdmin)
 
   useEffect(() => {
     if (!nutritionProfile) return
@@ -76,11 +71,6 @@ export default function ProfileScreen() {
         </View>
         <View style={styles.headerRow}>
           <Text style={styles.title}>PROFILO</Text>
-          {isAdmin && (
-            <TouchableOpacity style={styles.adminIconBtn} onPress={() => router.push('/admin')}>
-              <Ionicons name="settings-outline" size={18} color={colors.accent} />
-            </TouchableOpacity>
-          )}
         </View>
 
         <View style={styles.card}>
@@ -145,7 +135,7 @@ export default function ProfileScreen() {
             disabled={upsertNutritionProfile.isPending || isNutritionLoading}
           >
             {upsertNutritionProfile.isPending
-              ? <ActivityIndicator color={colors.bg} />
+              ? <ActivityIndicator color={colors.text} />
               : <Text style={styles.saveBtnText}>SALVA NUTRITION</Text>
             }
           </TouchableOpacity>
@@ -189,8 +179,7 @@ const styles = StyleSheet.create({
   inputLabel: { fontSize: 8, color: colors.textMuted, fontWeight: '900', letterSpacing: 2 },
   input: { borderWidth: 1, borderColor: colors.border, color: colors.text, backgroundColor: colors.bg, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14 },
   saveBtn: { backgroundColor: colors.accent, paddingVertical: 12, alignItems: 'center', marginTop: 4 },
-  saveBtnText: { color: colors.bg, fontSize: 11, fontWeight: '900', letterSpacing: 3 },
-  adminIconBtn: { width: 40, height: 40, borderWidth: 1, borderColor: colors.accent, backgroundColor: colors.accentDim, alignItems: 'center', justifyContent: 'center' },
+  saveBtnText: { color: colors.text, fontSize: 11, fontWeight: '900', letterSpacing: 3 },
   signOutBtn: { borderWidth: 1, borderColor: colors.accent, paddingVertical: 12, alignItems: 'center', marginTop: 16 },
   signOutBtnDisabled: { opacity: 0.5 },
   signOutText: { color: colors.accent, fontSize: 11, fontWeight: '900', letterSpacing: 4 },

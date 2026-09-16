@@ -1,36 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   KeyboardAvoidingView, Platform, ActivityIndicator,
 } from 'react-native'
 import { supabase } from '../../lib/supabase'
 import { colors } from '../../constants/colors'
+import { ToastHost, useToast } from '../../components/Toast'
 
 type Tab = 'login' | 'register'
-type Toast = { message: string; tone: 'success' | 'error' | 'info' }
 
 export default function LoginScreen() {
   const [tab, setTab] = useState<Tab>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [toast, setToast] = useState<Toast | null>(null)
-
-  useEffect(() => {
-    if (!toast) return
-    const timeout = setTimeout(() => setToast(null), 3500)
-    return () => clearTimeout(timeout)
-  }, [toast])
-
-  function showToast(message: string, tone: Toast['tone'] = 'info') {
-    setToast({ message, tone })
-  }
-
-  const toastToneStyle = toast?.tone === 'success'
-    ? styles.toastSuccess
-    : toast?.tone === 'error'
-      ? styles.toastError
-      : styles.toastInfo
+  const { toast, showToast } = useToast(3500)
 
   async function handleLogin() {
     if (!email || !password) return
@@ -147,11 +131,7 @@ export default function LoginScreen() {
         </View>
       </View>
 
-      {toast && (
-        <View style={[styles.toast, toastToneStyle]}>
-          <Text style={styles.toastText}>{toast.message}</Text>
-        </View>
-      )}
+      <ToastHost toast={toast} bottom={40} />
     </KeyboardAvoidingView>
   )
 }
@@ -187,18 +167,4 @@ const styles = StyleSheet.create({
   },
   primaryBtnText: { fontSize: 13, fontWeight: '900', color: colors.text, letterSpacing: 4 },
   forgotText: { textAlign: 'center', color: colors.textMuted, fontSize: 12, marginTop: -4, letterSpacing: 1 },
-  toast: {
-    position: 'absolute',
-    left: 24,
-    right: 24,
-    bottom: 40,
-    borderRadius: 2,
-    borderWidth: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  toastSuccess: { backgroundColor: '#12301f', borderColor: '#2f8f5b' },
-  toastError: { backgroundColor: '#35121a', borderColor: colors.danger },
-  toastInfo: { backgroundColor: colors.surfaceHigh, borderColor: colors.border },
-  toastText: { color: colors.text, fontSize: 13, fontWeight: '700', letterSpacing: 0.5, textAlign: 'center' },
 })

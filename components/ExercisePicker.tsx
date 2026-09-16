@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     height: 28,
   },
   equipmentChipActive: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.accentDim,
     borderColor: colors.accent,
   },
   equipmentChipText: {
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     letterSpacing: 1,
   },
-  equipmentChipTextActive: { color: colors.bg },
+  equipmentChipTextActive: { color: colors.accent },
   exerciseList: { flex: 1 },
   listContent: { paddingTop: 8, paddingBottom: 24 },
   emptyListContent: { flexGrow: 1, paddingTop: 40 },

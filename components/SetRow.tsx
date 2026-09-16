@@ -102,9 +102,9 @@ const styles = StyleSheet.create({
   values: { flexDirection: 'row', alignItems: 'center' },
   typeButtons: { flexDirection: 'row', gap: 4 },
   typeBtn: { paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, borderColor: colors.border, borderRadius: 4 },
-  typeBtnActive: { backgroundColor: colors.accent, borderColor: colors.accent },
+  typeBtnActive: { backgroundColor: colors.accentDim, borderColor: colors.accent },
   typeBtnText: { fontSize: 9, fontWeight: '700', color: colors.textMuted },
-  typeBtnTextActive: { color: colors.bg },
+  typeBtnTextActive: { color: colors.accent },
   editRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
   value: { fontSize: 16, fontWeight: '700', color: colors.text },
   cross: { fontSize: 12, color: colors.textMuted, marginHorizontal: 8 },
@@ -116,5 +116,5 @@ const styles = StyleSheet.create({
     fontWeight: '700', textAlign: 'center',
   },
   deleteBtn: { padding: 8 },
-  deleteChar: { color: colors.textDim, fontSize: 12 },
+  deleteChar: { color: colors.danger, fontSize: 12 },
 })

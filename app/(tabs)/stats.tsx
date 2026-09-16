@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   volumeTypeBtnActive: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.accentDim,
     borderColor: colors.accent,
   },
   volumeTypeText: {
@@ -368,6 +368,6 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   volumeTypeTextActive: {
-    color: colors.bg,
+    color: colors.accent,
   },
 })
