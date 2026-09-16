@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useFocusEffect } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { addDays, format, subDays } from 'date-fns'
 import { it } from 'date-fns/locale'
@@ -353,8 +354,8 @@ export default function NutritionScreen() {
     }
   }
 
-  useEffect(() => {
-    if (Platform.OS !== 'web' || mode !== 'today') return
+  useFocusEffect(useCallback(() => {
+    if (Platform.OS !== 'web' || mode !== 'today') return undefined
 
     const checkClipboard = () => {
       void readClipboardForMeal(false, false)
@@ -370,7 +371,7 @@ export default function NutritionScreen() {
       window.removeEventListener('focus', checkClipboard)
       document.removeEventListener('visibilitychange', checkClipboardWhenVisible)
     }
-  }, [mode, selectedMealType, selectedEntryDate])
+  }, [mode, selectedMealType, selectedEntryDate]))
 
   const busy = createMeal.isPending
   const calorieGoal = profile?.calorie_goal ?? 2000
@@ -590,10 +591,10 @@ const styles = StyleSheet.create({
   ringValue: { color: colors.textMuted, fontSize: 9, marginTop: 1 },
   ringLabel: { color: colors.textMuted, fontSize: 8, fontWeight: '900', letterSpacing: 2 },
   composer: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: 14, gap: 12 },
-  dateSelector: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  dateArrowBtn: { width: 36, height: 36, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
-  dateInput: { flex: 1, height: 36, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.bg, color: colors.text, paddingHorizontal: 10, fontSize: 13, fontWeight: '700' },
-  dateTodayBtn: { height: 36, borderWidth: 1, borderColor: colors.accent, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accentDim },
+  dateSelector: { flexDirection: 'row', gap: 6, alignItems: 'center', width: '100%' },
+  dateArrowBtn: { width: 34, height: 36, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg, flexShrink: 0 },
+  dateInput: { flex: 1, minWidth: 0, height: 36, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.bg, color: colors.text, paddingHorizontal: 8, fontSize: 12, fontWeight: '700' },
+  dateTodayBtn: { width: 48, height: 36, borderWidth: 1, borderColor: colors.accent, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accentDim, flexShrink: 0 },
   dateTodayText: { color: colors.accent, fontSize: 9, fontWeight: '900', letterSpacing: 1 },
   mealTypeRow: { gap: 8 },
   mealTypeBtn: { height: 30, paddingHorizontal: 10, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
