@@ -1,27 +1,15 @@
 import { useState } from 'react'
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, Alert, ActivityIndicator, Platform } from 'react-native'
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, ActivityIndicator, Platform } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { useIsAdmin } from '../../hooks/useAdmin'
 import { useEquipmentTypes, useExercisesAdmin, useExerciseMuscles, useMuscleGroupsAdmin } from '../../hooks/useAdminQueries'
 import { useCreateEquipment, useUpdateEquipment, useDeleteEquipment, useCreateMuscleGroup, useUpdateMuscleGroup, useDeleteMuscleGroup, useCreateExerciseAdmin, useUpdateExerciseAdmin, useDeleteExerciseAdmin, useCreateExerciseMuscle, useUpdateExerciseMuscle, useDeleteExerciseMuscle } from '../../hooks/useAdminMutations'
 import { AdminSelect } from '../../components/AdminSelect'
+import { useConfirmModal } from '../../components/ConfirmModal'
 import { colors } from '../../constants/colors'
 
 type AdminTab = 'equipment' | 'muscles' | 'exercises' | 'mappings'
-
-async function confirmDelete(title: string, message: string): Promise<boolean> {
-  if (Platform.OS === 'web') {
-    return window.confirm(`${title}\n${message}`)
-  } else {
-    return new Promise(resolve => {
-      Alert.alert(title, message, [
-        { text: 'Annulla', style: 'cancel', onPress: () => resolve(false) },
-        { text: 'Elimina', style: 'destructive', onPress: () => resolve(true) },
-      ])
-    })
-  }
-}
 
 export default function AdminScreen() {
   const router = useRouter()
@@ -95,6 +83,7 @@ function EquipmentSection() {
   const { mutate: create, isPending } = useCreateEquipment()
   const { data: equipment = [] } = useEquipmentTypes()
   const { mutate: deleteEq } = useDeleteEquipment()
+  const { confirm, confirmModal } = useConfirmModal()
 
   return (
     <View style={styles.section}>
@@ -129,7 +118,7 @@ function EquipmentSection() {
           <View style={styles.listItem}>
             <Text style={styles.listItemText}>{item.name}</Text>
             <TouchableOpacity onPress={async () => {
-              if (await confirmDelete('Elimina', `Eliminare "${item.name}"?`)) {
+              if (await confirm({ title: 'ELIMINA', message: `Eliminare "${item.name}"?`, confirmLabel: 'ELIMINA', danger: true })) {
                 deleteEq(item.id)
               }
             }} style={styles.deleteBtn}>
@@ -140,6 +129,7 @@ function EquipmentSection() {
           ListEmptyComponent={<Text style={styles.empty}>Nessun equipment</Text>}
         />
       </View>
+      {confirmModal}
     </View>
   )
 }
@@ -149,6 +139,7 @@ function MusclesSection() {
   const { mutate: create, isPending } = useCreateMuscleGroup()
   const { data: muscles = [] } = useMuscleGroupsAdmin()
   const { mutate: deleteMuscle } = useDeleteMuscleGroup()
+  const { confirm, confirmModal } = useConfirmModal()
 
   return (
     <View style={styles.section}>
@@ -183,7 +174,7 @@ function MusclesSection() {
           <View style={styles.listItem}>
             <Text style={styles.listItemText}>{item.name}</Text>
             <TouchableOpacity onPress={async () => {
-              if (await confirmDelete('Elimina', `Eliminare "${item.name}"?`)) {
+              if (await confirm({ title: 'ELIMINA', message: `Eliminare "${item.name}"?`, confirmLabel: 'ELIMINA', danger: true })) {
                 deleteMuscle(item.id)
               }
             }} style={styles.deleteBtn}>
@@ -194,6 +185,7 @@ function MusclesSection() {
           ListEmptyComponent={<Text style={styles.empty}>Nessun muscolo</Text>}
         />
       </View>
+      {confirmModal}
     </View>
   )
 }
@@ -206,6 +198,7 @@ function ExercisesSection() {
   const { data: equipment = [] } = useEquipmentTypes()
   const { mutate: create, isPending: createPending } = useCreateExerciseAdmin()
   const { mutate: deleteEx } = useDeleteExerciseAdmin()
+  const { confirm, confirmModal } = useConfirmModal()
 
   if (isLoading) return <ActivityIndicator color={colors.accent} size="large" style={{ marginTop: 40 }} />
 
@@ -268,7 +261,7 @@ function ExercisesSection() {
               </Text>
             </View>
             <TouchableOpacity onPress={async () => {
-              if (await confirmDelete('Elimina', `Eliminare "${item.name}"?`)) {
+              if (await confirm({ title: 'ELIMINA', message: `Eliminare "${item.name}"?`, confirmLabel: 'ELIMINA', danger: true })) {
                 deleteEx(item.id)
               }
             }} style={styles.deleteBtn}>
@@ -279,6 +272,7 @@ function ExercisesSection() {
           ListEmptyComponent={<Text style={styles.empty}>Nessun esercizio</Text>}
         />
       </View>
+      {confirmModal}
     </View>
   )
 }
@@ -294,6 +288,7 @@ function MappingsSection() {
 
   const { mutate: create, isPending: createPending } = useCreateExerciseMuscle()
   const { mutate: deleteMuscleMapping } = useDeleteExerciseMuscle()
+  const { confirm, confirmModal } = useConfirmModal()
 
   return (
     <View style={styles.section}>
@@ -364,7 +359,7 @@ function MappingsSection() {
                   <Text style={styles.listItemSub}>{item.activation_percentage}% attivazione</Text>
                 </View>
                 <TouchableOpacity onPress={async () => {
-                  if (await confirmDelete('Elimina', `Eliminare mapping "${item.muscle_groups?.name}"?`)) {
+                  if (await confirm({ title: 'ELIMINA', message: `Eliminare mapping "${item.muscle_groups?.name}"?`, confirmLabel: 'ELIMINA', danger: true })) {
                     deleteMuscleMapping({ exercise_id: selectedExerciseId, muscle_group_id: item.muscle_group_id })
                   }
                 }} style={styles.deleteBtn}>
@@ -377,6 +372,7 @@ function MappingsSection() {
           </View>
         </>
       )}
+      {confirmModal}
     </View>
   )
 }

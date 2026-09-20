@@ -49,6 +49,18 @@ export function useDeleteTemplate() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => {
+      const { error: sessionsError } = await supabase
+        .from('sessions')
+        .update({ template_id: null })
+        .eq('template_id', id)
+      if (sessionsError) throw sessionsError
+
+      const { error: exercisesError } = await supabase
+        .from('template_exercises')
+        .delete()
+        .eq('template_id', id)
+      if (exercisesError) throw exercisesError
+
       const { error } = await supabase.from('workout_templates').delete().eq('id', id)
       if (error) throw error
     },

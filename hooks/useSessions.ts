@@ -68,6 +68,8 @@ export function useSession(id: string) {
         `)
         .eq('id', id)
         .order('set_number', { foreignTable: 'session_sets' })
+        .order('created_at', { foreignTable: 'session_sets' })
+        .order('id', { foreignTable: 'session_sets' })
         .single()
       if (error) throw error
       return data
@@ -113,6 +115,7 @@ export function useCreateSession() {
             .order('date', { ascending: false })
             .limit(1)
 
+          let setNumber = 1
           let sets
           if (lastSessions && lastSessions.length > 0) {
             // Prendo i set dall'ultimo allenamento
@@ -130,7 +133,7 @@ export function useCreateSession() {
                 return {
                   session_id: session.id,
                   exercise_id: te.exercise_id,
-                  set_number: i + 1,
+                  set_number: setNumber++,
                   weight: lastSet?.weight ?? 0,
                   reps: lastSet?.reps ?? te.target_reps,
                 }
@@ -142,7 +145,7 @@ export function useCreateSession() {
               Array.from({ length: te.target_sets }, (_, i) => ({
                 session_id: session.id,
                 exercise_id: te.exercise_id,
-                set_number: i + 1,
+                set_number: setNumber++,
                 weight: 0,
                 reps: te.target_reps,
               }))

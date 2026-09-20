@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native'
 import { SessionSet } from '../lib/types'
 import { colors } from '../constants/colors'
@@ -13,15 +13,39 @@ export function SetRow({ set, onDelete, onUpdate }: Props) {
   const [weight, setWeight] = useState(set.weight.toString())
   const [reps, setReps] = useState(set.reps.toString())
   const [editing, setEditing] = useState(false)
+  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const repsRef = useRef<TextInput>(null)
+
+  useEffect(() => {
+    if (!editing) {
+      setWeight(set.weight.toString())
+      setReps(set.reps.toString())
+    }
+  }, [editing, set.reps, set.weight])
+
+  useEffect(() => {
+    return () => {
+      if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current)
+    }
+  }, [])
 
   function save() {
     const w = parseFloat(weight)
     const r = parseInt(reps, 10)
-    if (!isNaN(w) && !isNaN(r) && r > 0) onUpdate(w, r, set.rpe)
+    if (!isNaN(w) && !isNaN(r) && r > 0) onUpdate(w, r, set.rpe, set.set_type)
+  }
+
+  function handleFocus() {
+    if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current)
+  }
+
+  function handleBlur() {
+    save()
+    blurTimeoutRef.current = setTimeout(() => setEditing(false), 80)
   }
 
   function closeEdit() {
+    if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current)
     save()
     setEditing(false)
   }
@@ -40,7 +64,8 @@ export function SetRow({ set, onDelete, onUpdate }: Props) {
             keyboardType="decimal-pad"
             autoFocus
             returnKeyType="next"
-            onBlur={save}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             onSubmitEditing={() => repsRef.current?.focus()}
           />
           <Text style={styles.unit}>kg</Text>
@@ -52,7 +77,8 @@ export function SetRow({ set, onDelete, onUpdate }: Props) {
             onChangeText={setReps}
             keyboardType="number-pad"
             returnKeyType="done"
-            onBlur={closeEdit}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             onSubmitEditing={closeEdit}
           />
           <Text style={styles.unit}>rep</Text>

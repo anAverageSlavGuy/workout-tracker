@@ -60,6 +60,7 @@ export interface SessionSet {
   reps: number
   rpe: number | null
   set_type: 'topset' | 'backoff' | null
+  created_at?: string
   exercises?: Exercise
 }
 

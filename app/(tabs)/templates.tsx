@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Modal,
   TextInput,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -21,6 +20,7 @@ import {
   useDeleteTemplateExercise,
 } from "../../hooks/useTemplates";
 import { useExercises } from "../../hooks/useExercises";
+import { useConfirmModal } from "../../components/ConfirmModal";
 import { colors } from "../../constants/colors";
 import { Exercise, WorkoutTemplate } from "../../lib/types";
 
@@ -32,6 +32,7 @@ export default function TemplatesScreen() {
   const updateTemplate = useUpdateTemplate();
   const addTemplateExercise = useAddTemplateExercise();
   const deleteTemplateExercise = useDeleteTemplateExercise();
+  const { confirm, confirmModal } = useConfirmModal();
 
   const [showCreate, setShowCreate] = useState(false);
   const [editingTemplate, setEditingTemplate] =
@@ -117,18 +118,16 @@ export default function TemplatesScreen() {
     setSelected([]);
   }
 
-  function handleDelete(t: WorkoutTemplate) {
-    Alert.alert("Elimina", `Eliminare "${t.name}"?`, [
-      { text: "Annulla", style: "cancel" },
-      {
-        text: "Elimina",
-        style: "destructive",
-        onPress: () => deleteTemplate.mutate(t.id),
-      },
-    ]);
-  }
+  async function handleDelete(t: WorkoutTemplate) {
+    const confirmed = await confirm({
+      title: "ELIMINA",
+      message: `Eliminare "${t.name}"?`,
+      confirmLabel: "ELIMINA",
+      danger: true,
+    });
 
-  console.log("exercises", exercises);
+    if (confirmed) deleteTemplate.mutate(t.id);
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -184,7 +183,8 @@ export default function TemplatesScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => handleDelete(item)}
-              style={styles.actionBtn}
+              style={[styles.actionBtn, deleteTemplate.isPending && styles.actionBtnDisabled]}
+              disabled={deleteTemplate.isPending}
             >
               <Ionicons name="trash-outline" size={16} color={colors.danger} />
             </TouchableOpacity>
@@ -385,6 +385,7 @@ export default function TemplatesScreen() {
           </TouchableOpacity>
         </SafeAreaView>
       </Modal>
+      {confirmModal}
     </SafeAreaView>
   );
 }
@@ -438,6 +439,7 @@ const styles = StyleSheet.create({
   },
   cardSub: { fontSize: 11, color: colors.textMuted, marginTop: 4 },
   actionBtn: { padding: 8 },
+  actionBtnDisabled: { opacity: 0.4 },
   empty: {
     textAlign: "center",
     color: colors.textMuted,

@@ -12,6 +12,7 @@ import { useSwipeBack } from '../../hooks/useSwipeBack'
 import { ExercisePicker } from '../../components/ExercisePicker'
 import { SetRow } from '../../components/SetRow'
 import { MuscleActivationBadges } from '../../components/MuscleActivationBadges'
+import { useConfirmModal } from '../../components/ConfirmModal'
 import { Exercise, SessionSet } from '../../lib/types'
 import { colors } from '../../constants/colors'
 
@@ -29,6 +30,7 @@ export default function SessionScreen() {
   const deleteSet = useDeleteSet()
   const deleteSession = useDeleteSession()
   const updateSessionDate = useUpdateSessionDate()
+  const { confirm, confirmModal } = useConfirmModal()
 
   const [showPicker, setShowPicker] = useState(false)
   const [isEditingDate, setIsEditingDate] = useState(false)
@@ -41,7 +43,10 @@ export default function SessionScreen() {
   }
 
   function setInput(exerciseId: string, field: 'weight' | 'reps', value: string) {
-    setInputs(prev => ({ ...prev, [exerciseId]: { ...getInput(exerciseId), [field]: value } }))
+    setInputs(prev => ({
+      ...prev,
+      [exerciseId]: { ...(prev[exerciseId] ?? { weight: '', reps: '' }), [field]: value },
+    }))
   }
 
   function clearInput(exerciseId: string) {
@@ -49,33 +54,44 @@ export default function SessionScreen() {
   }
 
   const setsByExercise = useMemo(() => {
-    const map: Record<string, { exercise: Exercise; sets: SessionSet[] }> = {}
-    for (const s of session?.session_sets ?? []) {
-      if (!s.exercises) continue
-      if (!map[s.exercise_id]) map[s.exercise_id] = { exercise: s.exercises, sets: [] }
-      map[s.exercise_id].sets.push(s)
+    const compareSets = (a: SessionSet, b: SessionSet) => {
+      if (a.set_number !== b.set_number) return a.set_number - b.set_number
+      const aCreatedAt = a.created_at ?? ''
+      const bCreatedAt = b.created_at ?? ''
+      if (aCreatedAt !== bCreatedAt) return aCreatedAt.localeCompare(bCreatedAt)
+      return a.id.localeCompare(b.id)
     }
-    // Ordina i set per set_number e gli esercizi per il primo set di ogni esercizio
-    const result = Object.values(map)
+
+    const map = new Map<string, { exercise: Exercise; sets: SessionSet[] }>()
+    const orderedSets = [...(session?.session_sets ?? [])].sort(compareSets)
+
+    for (const s of orderedSets) {
+      if (!s.exercises) continue
+      const group = map.get(s.exercise_id)
+      if (group) {
+        group.sets.push(s)
+      } else {
+        map.set(s.exercise_id, { exercise: s.exercises, sets: [s] })
+      }
+    }
+
+    const result = Array.from(map.values())
     result.forEach(group => {
-      group.sets.sort((a, b) => a.set_number - b.set_number)
-    })
-    result.sort((a, b) => {
-      const aMin = Math.min(...a.sets.map(s => s.set_number))
-      const bMin = Math.min(...b.sets.map(s => s.set_number))
-      return aMin - bMin
+      group.sets.sort(compareSets)
     })
     return result
   }, [session])
 
-  function handleBack() {
+  async function handleBack() {
     const goBack = () => router.replace('/(tabs)')
 
     if ((session?.session_sets?.length ?? 0) > 0) {
-      Alert.alert('Esci', 'Vuoi uscire? I dati sono già salvati.', [
-        { text: 'Annulla', style: 'cancel' },
-        { text: 'Esci', onPress: goBack },
-      ])
+      const confirmed = await confirm({
+        title: 'ESCI',
+        message: 'Vuoi uscire? I dati sono già salvati.',
+        confirmLabel: 'ESCI',
+      })
+      if (confirmed) goBack()
     } else {
       goBack()
     }
@@ -117,14 +133,12 @@ export default function SessionScreen() {
   }
 
   async function handleDeleteSession() {
-    const confirmed = Platform.OS === 'web'
-      ? window.confirm('Sei sicuro di voler eliminare questo allenamento?')
-      : await new Promise(resolve => {
-          Alert.alert('Elimina allenamento', 'Sei sicuro di voler eliminare questo allenamento?', [
-            { text: 'Annulla', style: 'cancel', onPress: () => resolve(false) },
-            { text: 'Elimina', style: 'destructive', onPress: () => resolve(true) },
-          ])
-        })
+    const confirmed = await confirm({
+      title: 'ELIMINA ALLENAMENTO',
+      message: 'Sei sicuro di voler eliminare questo allenamento?',
+      confirmLabel: 'ELIMINA',
+      danger: true,
+    })
 
     if (confirmed) {
       await deleteSession.mutateAsync(id)
@@ -312,6 +326,7 @@ export default function SessionScreen() {
       </View>
 
       <ExercisePicker visible={showPicker} onClose={() => setShowPicker(false)} onSelect={handleAddExercise} />
+      {confirmModal}
     </View>
   )
 }

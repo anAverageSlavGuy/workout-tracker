@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router'
 import { useAuth } from '../../lib/auth'
 import { useNutritionProfile, useUpsertNutritionProfile } from '../../hooks/useNutrition'
 import { supabase } from '../../lib/supabase'
+import { useConfirmModal } from '../../components/ConfirmModal'
 import { colors } from '../../constants/colors'
 
 export default function ProfileScreen() {
@@ -17,6 +18,7 @@ export default function ProfileScreen() {
   const [proteinGoal, setProteinGoal] = useState('120')
   const [carbsGoal, setCarbsGoal] = useState('250')
   const [fatGoal, setFatGoal] = useState('55')
+  const { confirm, confirmModal } = useConfirmModal()
 
   useEffect(() => {
     if (!nutritionProfile) return
@@ -27,14 +29,12 @@ export default function ProfileScreen() {
   }, [nutritionProfile])
 
   async function handleSignOut() {
-    const confirmed = Platform.OS === 'web'
-      ? window.confirm('Sei sicuro di voler uscire?')
-      : await new Promise(resolve => {
-          Alert.alert('Esci', 'Vuoi uscire?', [
-            { text: 'Annulla', style: 'cancel', onPress: () => resolve(false) },
-            { text: 'Esci', style: 'destructive', onPress: () => resolve(true) },
-          ])
-        })
+    const confirmed = await confirm({
+      title: 'ESCI',
+      message: 'Vuoi uscire dal profilo?',
+      confirmLabel: 'ESCI',
+      danger: true,
+    })
 
     if (confirmed) {
       setIsLoggingOut(true)
@@ -154,6 +154,7 @@ export default function ProfileScreen() {
         </View>
         <Text style={styles.version}>ASCENT v1.0.0</Text>
       </ScrollView>
+      {confirmModal}
     </SafeAreaView>
   )
 }
