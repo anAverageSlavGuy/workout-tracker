@@ -19,7 +19,7 @@ export function useSessions(filters?: SessionFilters) {
           *,
           session_sets(
             *,
-            exercises(*, exercise_muscles(*, muscle_groups(*)))
+            exercises(*, equipment_types(*), exercise_muscles(*, muscle_groups(*)))
           )
         `)
         .order('date', { ascending: false })
@@ -63,7 +63,7 @@ export function useSession(id: string) {
           *,
           session_sets(
             *,
-            exercises(*, exercise_muscles(*, muscle_groups(*)))
+            exercises(*, equipment_types(*), exercise_muscles(*, muscle_groups(*)))
           )
         `)
         .eq('id', id)
@@ -178,7 +178,7 @@ export function useAddSet() {
       const { data, error } = await supabase
         .from('session_sets')
         .insert(input)
-        .select('*, exercises(*, exercise_muscles(*, muscle_groups(*)))')
+        .select('*, exercises(*, equipment_types(*), exercise_muscles(*, muscle_groups(*)))')
         .single()
       if (error) throw error
       return data as SessionSet
