@@ -3,7 +3,7 @@ import { Session, SessionSet } from './types'
 
 export type OfflineSessionOperation =
   | { id: string; type: 'insert_set'; payload: SessionSet }
-  | { id: string; type: 'update_set'; payload: { id: string; weight: number; reps: number; rpe?: number | null; set_type?: SessionSet['set_type'] } }
+  | { id: string; type: 'update_set'; payload: { id: string; weight: number; reps: number | null; rpe?: number | null; set_type?: SessionSet['set_type'] } }
   | { id: string; type: 'delete_set'; payload: { id: string } }
   | { id: string; type: 'update_session'; payload: { id: string; date: string } }
 
@@ -111,7 +111,7 @@ export async function addSetOffline(sessionId: string, input: Omit<SessionSet, '
   return { set, session: next }
 }
 
-export async function updateSetOffline(sessionId: string, input: { id: string; weight: number; reps: number; rpe?: number | null; set_type?: SessionSet['set_type'] }) {
+export async function updateSetOffline(sessionId: string, input: { id: string; weight: number; reps: number | null; rpe?: number | null; set_type?: SessionSet['set_type'] }) {
   return updateLocal(
     sessionId,
     { id: makeId(), type: 'update_set', payload: input },

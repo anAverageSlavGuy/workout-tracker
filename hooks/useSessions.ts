@@ -140,7 +140,7 @@ export function useCreateSession() {
                   exercise_id: te.exercise_id,
                   set_number: setNumber++,
                   weight: lastSet?.weight ?? 0,
-                  reps: lastSet?.reps ?? te.target_reps,
+                  reps: lastSet ? lastSet.reps : te.target_reps,
                 }
               })
             })
@@ -177,7 +177,7 @@ export function useAddSet() {
       exercise_id: string
       set_number: number
       weight: number
-      reps: number
+      reps: number | null
       rpe?: number
     }) => {
       const { data, error } = await supabase
@@ -202,7 +202,7 @@ export function useUpdateSet() {
       id: string
       session_id: string
       weight?: number
-      reps?: number
+      reps?: number | null
       rpe?: number | null
       set_type?: string | null
     }) => {

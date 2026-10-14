@@ -63,7 +63,7 @@ export function useOfflineWorkout(sessionId: string) {
     return result.set
   }, [refreshPending, sessionId, updateCache])
 
-  const addExercise = useCallback(async (exercise: Exercise, input: { weight: number; reps: number }, setNumber: number) => {
+  const addExercise = useCallback(async (exercise: Exercise, input: { weight: number; reps: number | null }, setNumber: number) => {
     return addSet({
       session_id: sessionId,
       exercise_id: exercise.id,
@@ -76,7 +76,7 @@ export function useOfflineWorkout(sessionId: string) {
     })
   }, [addSet, sessionId])
 
-  const updateSet = useCallback(async (input: { id: string; weight: number; reps: number; rpe?: number | null; set_type?: SessionSet['set_type'] }) => {
+  const updateSet = useCallback(async (input: { id: string; weight: number; reps: number | null; rpe?: number | null; set_type?: SessionSet['set_type'] }) => {
     const session = await updateSetOffline(sessionId, input)
     // Update the visible query from the current cache as well as the local
     // record. This avoids replacing the query with a stale snapshot when the

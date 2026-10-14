@@ -41,7 +41,7 @@ export default function DashboardScreen() {
     const session = await createSession.mutateAsync({
       template_id: templateId,
     });
-    router.push(`/session/${session.id}`);
+    router.push(`/session/${session.id}?created=true`);
   }
 
   return (

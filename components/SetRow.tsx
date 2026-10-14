@@ -6,12 +6,12 @@ import { colors } from '../constants/colors'
 interface Props {
   set: SessionSet
   onDelete: () => void
-  onUpdate: (weight: number, reps: number, rpe?: number | null, setType?: SessionSet['set_type']) => void
+  onUpdate: (weight: number, reps: number | null, rpe?: number | null, setType?: SessionSet['set_type']) => void
 }
 
 export function SetRow({ set, onDelete, onUpdate }: Props) {
   const [weight, setWeight] = useState(set.weight.toString())
-  const [reps, setReps] = useState(set.reps.toString())
+  const [reps, setReps] = useState(set.reps?.toString() ?? '')
   const [editing, setEditing] = useState(false)
   const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const repsRef = useRef<TextInput>(null)
@@ -19,7 +19,7 @@ export function SetRow({ set, onDelete, onUpdate }: Props) {
   useEffect(() => {
     if (!editing) {
       setWeight(set.weight.toString())
-      setReps(set.reps.toString())
+      setReps(set.reps?.toString() ?? '')
     }
   }, [editing, set.reps, set.weight])
 
@@ -30,9 +30,9 @@ export function SetRow({ set, onDelete, onUpdate }: Props) {
   }, [])
 
   function save() {
-    const w = parseFloat(weight)
-    const r = parseInt(reps, 10)
-    if (!isNaN(w) && !isNaN(r) && r > 0) onUpdate(w, r, set.rpe, set.set_type)
+    const w = parseFloat(weight.replace(',', '.'))
+    const r = reps.trim() === '' ? null : parseInt(reps, 10)
+    if (!isNaN(w) && (r === null || (!isNaN(r) && r > 0))) onUpdate(w, r, set.rpe, set.set_type)
   }
 
   function handleFocus() {
@@ -60,7 +60,7 @@ export function SetRow({ set, onDelete, onUpdate }: Props) {
           <TextInput
             style={styles.input}
             value={weight}
-            onChangeText={setWeight}
+            onChangeText={(value) => setWeight(value.replace(',', '.'))}
             keyboardType="decimal-pad"
             autoFocus
             returnKeyType="next"
@@ -89,7 +89,7 @@ export function SetRow({ set, onDelete, onUpdate }: Props) {
             <Text style={styles.value}>{set.weight}</Text>
             <Text style={styles.unit}> kg</Text>
             <Text style={styles.cross}>×</Text>
-            <Text style={styles.value}>{set.reps}</Text>
+            <Text style={styles.value}>{set.reps ?? 'MAX'}</Text>
             <Text style={styles.unit}> rep</Text>
             {set.rpe != null && <Text style={styles.rpe}>  RPE {set.rpe}</Text>}
           </TouchableOpacity>

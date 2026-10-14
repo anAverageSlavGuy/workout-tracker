@@ -44,7 +44,9 @@ export default function StatsScreen() {
     ? sessions
         .flatMap(s => (s.session_sets ?? [])
           .filter(ss => ss.exercise_id === selectedExercise.id)
-          .map(ss => ({ date: s.date, orm: epley1RM(ss.weight, ss.reps), weight: ss.weight, reps: ss.reps }))
+          .flatMap(ss => ss.reps === null
+            ? []
+            : [{ date: s.date, orm: epley1RM(ss.weight, ss.reps), weight: ss.weight, reps: ss.reps }])
         )
         .sort((a, b) => a.date.localeCompare(b.date))
         .reduce<Array<{ date: string; orm: number; maxWeight: number; repsAtMaxWeight: number }>>((acc, cur) => {
@@ -110,19 +112,21 @@ export default function StatsScreen() {
       .filter(s => s.date >= from30)
       .flatMap(s => s.session_sets ?? [])
       .forEach(ss => {
+        const reps = ss.reps
+        if (reps === null) return
         ss.exercises?.exercise_muscles?.forEach(em => {
           if (em.muscle_groups?.name && em.activation_percentage > 0) {
             const muscleGroup = em.muscle_groups.name
             const activation = em.activation_percentage / 100
 
             // 1. Reps × activation%
-            volumeReps[muscleGroup] = (volumeReps[muscleGroup] ?? 0) + ss.reps * activation
+            volumeReps[muscleGroup] = (volumeReps[muscleGroup] ?? 0) + reps * activation
 
             // 2. Weight × Reps × activation% (meccanico)
-            volumeMeccanico[muscleGroup] = (volumeMeccanico[muscleGroup] ?? 0) + ss.weight * ss.reps * activation
+            volumeMeccanico[muscleGroup] = (volumeMeccanico[muscleGroup] ?? 0) + ss.weight * reps * activation
 
             // 3. Weight × Reps × Sets (tonnellaggio) - qui consideriamo ogni set
-            volumeTonnellaggio[muscleGroup] = (volumeTonnellaggio[muscleGroup] ?? 0) + ss.weight * ss.reps * activation
+            volumeTonnellaggio[muscleGroup] = (volumeTonnellaggio[muscleGroup] ?? 0) + ss.weight * reps * activation
           }
         })
       })

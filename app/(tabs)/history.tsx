@@ -527,7 +527,7 @@ function buildWorkoutHistoryHtml(
               return `
                 <div class="setLine">
                   <span class="setNumber">${setIndex + 1}</span>
-                  <span>${escapeHtml(formatNumber(set.weight))} kg x ${escapeHtml(String(set.reps))}${type}</span>
+                  <span>${escapeHtml(formatNumber(set.weight))} kg x ${escapeHtml(set.reps == null ? "MAX" : String(set.reps))}${type}</span>
                 </div>
               `;
             })
@@ -606,7 +606,7 @@ function buildWorkoutHistoryHtml(
 type WorkoutReportSet = {
   index: number;
   weight: number;
-  reps: number;
+  reps: number | null;
   type: "topset" | "backoff" | null;
 };
 
@@ -742,7 +742,7 @@ async function downloadWorkoutHistoryPdfOnWeb(
     exercise.sets.forEach((set, setIndex) => {
       const lineY = y + 14 + setIndex * 15;
       const setLabel = `${set.index}`;
-      const setText = `${formatNumber(set.weight)} kg x ${set.reps}`;
+      const setText = `${formatNumber(set.weight)} kg x ${set.reps == null ? "MAX" : set.reps}`;
 
       doc.setTextColor(79, 79, 79);
       doc.setFont("helvetica", "bold");

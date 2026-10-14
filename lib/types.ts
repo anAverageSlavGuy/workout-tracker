@@ -57,7 +57,7 @@ export interface SessionSet {
   exercise_id: string
   set_number: number
   weight: number
-  reps: number
+  reps: number | null
   rpe: number | null
   set_type: 'topset' | 'backoff' | null
   created_at?: string

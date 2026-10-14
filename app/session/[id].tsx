@@ -36,8 +36,9 @@ import { colors } from "../../constants/colors";
 import { useOfflineWorkout } from "../../hooks/useOfflineWorkout";
 
 export default function SessionScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, created } = useLocalSearchParams<{ id: string; created?: string }>();
   const router = useRouter();
+  const isNewSession = created === "true";
 
   const { data: session, isLoading } = useSession(id);
   const offline = useOfflineWorkout(id);
@@ -117,6 +118,12 @@ export default function SessionScreen() {
   async function handleBack() {
     const goBack = () => router.replace("/(tabs)");
 
+    if (isNewSession && (session?.session_sets?.length ?? 0) === 0) {
+      await deleteSession.mutateAsync(id);
+      goBack();
+      return;
+    }
+
     if ((session?.session_sets?.length ?? 0) > 0) {
       const confirmed = await confirm({
         title: "ESCI",
@@ -136,14 +143,15 @@ export default function SessionScreen() {
       ...(session?.session_sets?.map((s) => s.set_number) ?? []),
     );
     const { weight, reps } = getInput(exercise.id);
+    const parsedWeight = parseFloat(weight.replace(',', '.')) || 0;
     if (isOffline) {
-      await offline.addExercise(exercise, { weight: parseFloat(weight) || 0, reps: parseInt(reps, 10) || 10 }, maxSetNumber + 1);
+      await offline.addExercise(exercise, { weight: parsedWeight, reps: parseInt(reps, 10) || 10 }, maxSetNumber + 1);
     } else {
       await addSet.mutateAsync({
         session_id: id,
         exercise_id: exercise.id,
         set_number: maxSetNumber + 1,
-        weight: parseFloat(weight) || 0,
+        weight: parsedWeight,
         reps: parseInt(reps, 10) || 10,
       });
     }
@@ -160,10 +168,10 @@ export default function SessionScreen() {
 
     // Usa il valore digitato; se vuoto, ripropone l'ultimo set
     const w =
-      weight.trim() !== "" ? parseFloat(weight) : (lastSet?.weight ?? 0);
-    const r = reps.trim() !== "" ? parseInt(reps, 10) : (lastSet?.reps ?? 10);
+      weight.trim() !== "" ? parseFloat(weight.replace(',', '.')) : (lastSet?.weight ?? 0);
+    const r = reps.trim() !== "" ? parseInt(reps, 10) : (lastSet ? lastSet.reps : 10);
 
-    if (isNaN(w) || isNaN(r) || r <= 0) return;
+    if (isNaN(w) || (r !== null && (isNaN(r) || r <= 0))) return;
 
     if (isOffline) {
       await offline.addSet({ session_id: id, exercise_id: exercise.id, set_number: maxSetNumber + 1, weight: w, reps: r, rpe: null, set_type: null, exercises: exercise });
@@ -362,13 +370,13 @@ export default function SessionScreen() {
                 placeholderTextColor={colors.textDim}
                 keyboardType="decimal-pad"
                 value={getInput(exercise.id).weight}
-                onChangeText={(v) => setInput(exercise.id, "weight", v)}
+                onChangeText={(v) => setInput(exercise.id, "weight", v.replace(',', '.'))}
               />
               <Text style={styles.addSetUnit}>kg</Text>
               <Text style={styles.addSetCross}>×</Text>
               <TextInput
                 style={styles.addSetInput}
-                placeholder={sets.at(-1)?.reps.toString() ?? "10"}
+                placeholder={sets.length === 0 ? "10" : sets.at(-1)?.reps == null ? "MAX" : String(sets.at(-1)?.reps)}
                 placeholderTextColor={colors.textDim}
                 keyboardType="number-pad"
                 value={getInput(exercise.id).reps}
