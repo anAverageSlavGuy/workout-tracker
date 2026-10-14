@@ -6,8 +6,15 @@ import * as Network from 'expo-network'
 if (Platform.OS === 'web' && typeof console !== 'undefined') {
   const _error = console.error.bind(console)
   console.error = (...args: unknown[]) => {
-    const msg = typeof args[0] === 'string' ? args[0] : ''
-    if (msg.includes('accessibilityHint') || msg.includes('accessibilityLabel') || msg.includes('accessibilityRole')) return
+    const msg = args
+      .filter((arg): arg is string => typeof arg === 'string')
+      .join(' ')
+      .toLowerCase()
+    if (
+      msg.includes('accessibilityhint') ||
+      msg.includes('accessibilitylabel') ||
+      msg.includes('accessibilityrole')
+    ) return
     _error(...args)
   }
 }
