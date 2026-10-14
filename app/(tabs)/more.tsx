@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   line: { flex: 1, height: 1, backgroundColor: colors.border },
   ornamentChar: { color: colors.accent, fontSize: 12 },
   title: { fontSize: 28, fontWeight: '900', color: colors.text, letterSpacing: 8, marginBottom: 4 },
-  list: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
+  list: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, borderBottomWidth: 0 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border },
   iconBox: { width: 40, height: 40, borderWidth: 1, borderColor: colors.accent, backgroundColor: colors.accentDim, alignItems: 'center', justifyContent: 'center' },
   rowTitle: { color: colors.text, fontSize: 13, fontWeight: '900', letterSpacing: 2 },

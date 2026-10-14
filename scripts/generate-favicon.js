@@ -22,11 +22,11 @@ try {
   ctx.fillStyle = '#0a0a0c';
   ctx.fillRect(0, 0, width, height);
 
-  // Red color
-  const red = '#d41f2e';
+  // Accent color
+  const accent = '#ff4105';
 
   // Draw outer diamond
-  ctx.strokeStyle = red;
+  ctx.strokeStyle = accent;
   ctx.lineWidth = 1.5;
   ctx.beginPath();
   ctx.moveTo(24, 2);
@@ -58,7 +58,7 @@ try {
   ctx.stroke();
 
   // Draw corner ornaments
-  ctx.fillStyle = red;
+  ctx.fillStyle = accent;
   ctx.beginPath();
   ctx.arc(24, 8, 1.5, 0, Math.PI * 2);
   ctx.fill();

@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   inputLabel: { fontSize: 8, color: colors.textMuted, fontWeight: '900', letterSpacing: 2 },
   input: { borderWidth: 1, borderColor: colors.border, color: colors.text, backgroundColor: colors.bg, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14 },
   saveBtn: { backgroundColor: colors.accent, paddingVertical: 12, alignItems: 'center', marginTop: 4 },
-  saveBtnText: { color: colors.text, fontSize: 11, fontWeight: '900', letterSpacing: 3 },
+  saveBtnText: { color: '#fff', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
   signOutBtn: { borderWidth: 1, borderColor: colors.accent, paddingVertical: 12, alignItems: 'center', marginTop: 16 },
   signOutBtnDisabled: { opacity: 0.5 },
   signOutText: { color: colors.accent, fontSize: 11, fontWeight: '900', letterSpacing: 4 },

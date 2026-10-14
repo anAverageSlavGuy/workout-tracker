@@ -165,6 +165,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent, borderRadius: 2, paddingVertical: 16,
     alignItems: 'center', marginTop: 0,
   },
-  primaryBtnText: { fontSize: 13, fontWeight: '900', color: colors.text, letterSpacing: 4 },
+  primaryBtnText: { fontSize: 13, fontWeight: '900', color: '#fff', letterSpacing: 4 },
   forgotText: { textAlign: 'center', color: colors.textMuted, fontSize: 12, marginTop: -4, letterSpacing: 1 },
 })

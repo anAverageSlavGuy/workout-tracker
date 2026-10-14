@@ -580,19 +580,19 @@ function buildWorkoutHistoryHtml(
           .sessionHeader { background: #272727; color: #ffffff; display: grid; grid-template-columns: 92px 1fr; }
           .sessionHeader div { padding: 9px 10px; border-right: 1px solid #ffffff; }
           .sessionHeader div:last-child { border-right: 0; }
-          .sessionHeader span { color: #f3d2d6; display: block; font-size: 7px; letter-spacing: 1px; margin-bottom: 2px; text-transform: uppercase; }
+          .sessionHeader span { color: rgba(255, 65, 5, 0.7); display: block; font-size: 7px; letter-spacing: 1px; margin-bottom: 2px; text-transform: uppercase; }
           .sessionHeader strong { font-size: 10px; }
           .session table { margin-top: 6px; }
           table { border-collapse: collapse; width: 100%; }
           th, td { border: 1px solid #272727; padding: 7px 8px; vertical-align: top; }
-          th { background: #f3d2d6; font-size: 8px; letter-spacing: 1px; text-align: left; text-transform: uppercase; }
+          th { background: rgba(255, 65, 5, 0.14); font-size: 8px; letter-spacing: 1px; text-align: left; text-transform: uppercase; }
           .exerciseName { font-weight: 700; }
           .equipmentName { color: #4f4f4f; display: block; font-size: 8px; font-weight: 400; margin-top: 2px; }
           .setLine { align-items: center; border-bottom: 1px solid #d9d9d9; display: grid; gap: 6px; grid-template-columns: 18px 1fr; padding: 3px 0; }
           .setLine:first-child { padding-top: 0; }
           .setLine:last-child { border-bottom: 0; padding-bottom: 0; }
           .setNumber { color: #4f4f4f; font-size: 8px; font-weight: 700; }
-          .setType { color: #d41f2e; font-size: 9px; font-weight: 900; margin-left: 4px; }
+          .setType { color: #ff4105; font-size: 9px; font-weight: 900; margin-left: 4px; }
         </style>
       </head>
       <body>
@@ -1008,7 +1008,7 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   exportText: {
-    color: colors.text,
+    color: '#fff',
     fontSize: 10,
     fontWeight: "900",
     letterSpacing: 2,

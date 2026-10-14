@@ -128,7 +128,6 @@ const styles = StyleSheet.create({
   ornamentChar: { color: colors.accent, fontSize: 12 },
   appName: {
     fontSize: 44, fontWeight: '900', color: colors.text, letterSpacing: 12,
-    textShadowColor: colors.accent, textShadowRadius: 16, textShadowOffset: { width: 0, height: 0 },
   },
   greeting: { fontSize: 13, color: colors.text, letterSpacing: 3, textTransform: 'uppercase' },
   dateText: { fontSize: 11, color: colors.textMuted, letterSpacing: 2, textTransform: 'capitalize' },

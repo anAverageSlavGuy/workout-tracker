@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { Session, SessionSet } from '../lib/types'
+import { cacheSession, getCachedSession } from '../lib/offlineSession'
 
 interface SessionFilters {
   muscleGroupId?: string
@@ -71,8 +72,12 @@ export function useSession(id: string) {
         .order('created_at', { foreignTable: 'session_sets' })
         .order('id', { foreignTable: 'session_sets' })
         .single()
-      if (error) throw error
-      return data
+      if (error) {
+        const cached = await getCachedSession(id)
+        if (cached) return cached
+        throw error
+      }
+      return await cacheSession(data)
     },
     enabled: !!id,
   })

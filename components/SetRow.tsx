@@ -6,7 +6,7 @@ import { colors } from '../constants/colors'
 interface Props {
   set: SessionSet
   onDelete: () => void
-  onUpdate: (weight: number, reps: number, rpe?: number | null, setType?: string | null) => void
+  onUpdate: (weight: number, reps: number, rpe?: number | null, setType?: SessionSet['set_type']) => void
 }
 
 export function SetRow({ set, onDelete, onUpdate }: Props) {

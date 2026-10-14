@@ -11,9 +11,11 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import {
@@ -31,12 +33,15 @@ import { MuscleActivationBadges } from "../../components/MuscleActivationBadges"
 import { useConfirmModal } from "../../components/ConfirmModal";
 import { Exercise, SessionSet } from "../../lib/types";
 import { colors } from "../../constants/colors";
+import { useOfflineWorkout } from "../../hooks/useOfflineWorkout";
 
 export default function SessionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
 
   const { data: session, isLoading } = useSession(id);
+  const offline = useOfflineWorkout(id);
+  const isOffline = offline.isOfflineMode;
 
   const swipeBackHandler = useSwipeBack({
     onSwipe: () => handleBack(),
@@ -49,6 +54,7 @@ export default function SessionScreen() {
   const { confirm, confirmModal } = useConfirmModal();
 
   const [showPicker, setShowPicker] = useState(false);
+  const [showFabMenu, setShowFabMenu] = useState(false);
   const [isEditingDate, setIsEditingDate] = useState(false);
   const [dateInput, setDateInput] = useState("");
   // Stato separato per ogni esercizio: { weight, reps }
@@ -130,13 +136,17 @@ export default function SessionScreen() {
       ...(session?.session_sets?.map((s) => s.set_number) ?? []),
     );
     const { weight, reps } = getInput(exercise.id);
-    await addSet.mutateAsync({
-      session_id: id,
-      exercise_id: exercise.id,
-      set_number: maxSetNumber + 1,
-      weight: parseFloat(weight) || 0,
-      reps: parseInt(reps, 10) || 10,
-    });
+    if (isOffline) {
+      await offline.addExercise(exercise, { weight: parseFloat(weight) || 0, reps: parseInt(reps, 10) || 10 }, maxSetNumber + 1);
+    } else {
+      await addSet.mutateAsync({
+        session_id: id,
+        exercise_id: exercise.id,
+        set_number: maxSetNumber + 1,
+        weight: parseFloat(weight) || 0,
+        reps: parseInt(reps, 10) || 10,
+      });
+    }
   }
 
   async function handleAddSet(exercise: Exercise) {
@@ -155,13 +165,17 @@ export default function SessionScreen() {
 
     if (isNaN(w) || isNaN(r) || r <= 0) return;
 
-    await addSet.mutateAsync({
-      session_id: id,
-      exercise_id: exercise.id,
-      set_number: maxSetNumber + 1,
-      weight: w,
-      reps: r,
-    });
+    if (isOffline) {
+      await offline.addSet({ session_id: id, exercise_id: exercise.id, set_number: maxSetNumber + 1, weight: w, reps: r, rpe: null, set_type: null });
+    } else {
+      await addSet.mutateAsync({
+        session_id: id,
+        exercise_id: exercise.id,
+        set_number: maxSetNumber + 1,
+        weight: w,
+        reps: r,
+      });
+    }
     clearInput(exercise.id);
   }
 
@@ -210,7 +224,8 @@ export default function SessionScreen() {
       return;
     }
 
-    await updateSessionDate.mutateAsync({ id, date: nextDate });
+    if (isOffline) await offline.updateDate(nextDate);
+    else await updateSessionDate.mutateAsync({ id, date: nextDate });
     setIsEditingDate(false);
   }
 
@@ -241,15 +256,9 @@ export default function SessionScreen() {
             {format(new Date(session.date), "EEEE d MMMM", { locale: it })}
           </Text>
         </View>
-        <TouchableOpacity
-          onPress={() => setShowPicker(true)}
-          style={styles.addExBtn}
-        >
-          <Text style={styles.addExBtnText}>+ ESERCIZIO</Text>
-        </TouchableOpacity>
       </View>
       <View style={styles.headerDivider} />
-      {Platform.OS === "web" && (
+      {/* {Platform.OS === "web" && (
         <View
           style={{
             padding: 8,
@@ -269,7 +278,22 @@ export default function SessionScreen() {
             Tieni premuto ↓ per tornare o usa il bottone back del browser
           </Text>
         </View>
+      )} */}
+      {(isOffline || offline.pendingCount > 0) && (
+        <View style={styles.offlineBar}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.offlineTitle}>
+              {isOffline ? "MODALITÀ OFFLINE" : "MODIFICHE DA SINCRONIZZARE"}
+            </Text>
+            <Text style={styles.offlineText}>
+              {offline.pendingCount > 0
+                ? `${offline.pendingCount} operazion${offline.pendingCount === 1 ? "e" : "i"} in attesa`
+                : "I set vengono salvati sul dispositivo"}
+            </Text>
+          </View>
+        </View>
       )}
+      {offline.syncError && <Text style={styles.syncError}>{offline.syncError}</Text>}
 
       <ScrollView
         style={styles.scroll}
@@ -324,17 +348,10 @@ export default function SessionScreen() {
               <SetRow
                 key={s.id}
                 set={s}
-                onDelete={() => deleteSet.mutate({ id: s.id, session_id: id })}
-                onUpdate={(w, r, rpe, setType) =>
-                  updateSet.mutate({
-                    id: s.id,
-                    session_id: id,
-                    weight: w,
-                    reps: r,
-                    rpe,
-                    set_type: setType,
-                  })
-                }
+                onDelete={() => isOffline ? offline.deleteSet({ id: s.id }) : deleteSet.mutate({ id: s.id, session_id: id })}
+                onUpdate={(w, r, rpe, setType) => isOffline
+                  ? offline.updateSet({ id: s.id, weight: w, reps: r, rpe, set_type: setType })
+                  : updateSet.mutate({ id: s.id, session_id: id, weight: w, reps: r, rpe, set_type: setType })}
               />
             ))}
 
@@ -361,7 +378,7 @@ export default function SessionScreen() {
               <TouchableOpacity
                 style={styles.addSetBtn}
                 onPress={() => handleAddSet(exercise)}
-                disabled={addSet.isPending}
+                disabled={addSet.isPending || offline.isSyncing}
               >
                 {addSet.isPending ? (
                   <ActivityIndicator color={colors.text} size="small" />
@@ -374,9 +391,97 @@ export default function SessionScreen() {
         ))}
       </ScrollView>
 
-      <View style={styles.footer}>
-        {isEditingDate && (
-          <View style={styles.dateEditor}>
+      {showFabMenu && (
+        <Pressable
+          accessibilityLabel="Chiudi menu azioni"
+          onPress={() => setShowFabMenu(false)}
+          style={styles.fabBackdrop}
+        />
+      )}
+      {showFabMenu && (
+        <View style={styles.fabMenu}>
+          <TouchableOpacity
+            style={styles.fabAction}
+            onPress={() => { offline.setIsOfflineMode(!isOffline); setShowFabMenu(false); }}
+          >
+            <Text style={styles.fabActionLabel}>{isOffline ? "USA ONLINE" : "USA OFFLINE"}</Text>
+            <View style={styles.fabActionIcon}>
+              <Ionicons name={isOffline ? "wifi-outline" : "cloud-offline-outline"} size={18} color="#fff" />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.fabAction}
+            onPress={() => { setShowPicker(true); setShowFabMenu(false); }}
+          >
+            <Text style={styles.fabActionLabel}>AGGIUNGI ESERCIZIO</Text>
+            <View style={styles.fabActionIcon}>
+              <Ionicons name="add" size={20} color="#fff" />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.fabAction}
+            onPress={() => { startEditingDate(); setShowFabMenu(false); }}
+            disabled={updateSessionDate.isPending}
+          >
+            <Text style={styles.fabActionLabel}>CAMBIA DATA</Text>
+            <View style={styles.fabActionIcon}>
+              <Ionicons name="calendar-outline" size={17} color="#fff" />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.fabAction}
+            onPress={() => { handleDeleteSession(); setShowFabMenu(false); }}
+            disabled={deleteSession.isPending}
+          >
+            <Text style={[styles.fabActionLabel, { color: colors.danger }]}>ELIMINA ALLENAMENTO</Text>
+            <View style={[styles.fabActionIcon, styles.fabDangerIcon]}>
+              <Ionicons name="trash-outline" size={17} color="#fff" />
+            </View>
+          </TouchableOpacity>
+          {offline.pendingCount > 0 && (
+            <TouchableOpacity
+              style={styles.fabAction}
+              onPress={() => offline.sync().catch(() => undefined)}
+              disabled={offline.isSyncing}
+            >
+              <Text style={styles.fabActionLabel}>SINCRONIZZA ({offline.pendingCount})</Text>
+              <View style={styles.fabActionIcon}>
+                {offline.isSyncing ? <ActivityIndicator color="#fff" size="small" /> : <Ionicons name="sync-outline" size={18} color="#fff" />}
+              </View>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+      <View style={styles.fabWrap}>
+        <TouchableOpacity
+          accessibilityLabel={showFabMenu ? "Chiudi azioni allenamento" : `Apri azioni allenamento, modalità ${isOffline ? "offline" : "online"}`}
+          onPress={() => setShowFabMenu(value => !value)}
+          style={[styles.fab, isOffline && styles.fabOffline]}
+        >
+          <Ionicons
+            name={isOffline ? "cloud-offline-outline" : "wifi-outline"}
+            size={24}
+            color={isOffline ? colors.accent : '#fff'}
+          />
+        </TouchableOpacity>
+      </View>
+
+      <ExercisePicker
+        visible={showPicker}
+        onClose={() => setShowPicker(false)}
+        onSelect={handleAddExercise}
+      />
+      <Modal
+        visible={isEditingDate}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsEditingDate(false)}
+      >
+        <Pressable style={styles.dateDialogBackdrop} onPress={() => setIsEditingDate(false)}>
+          <Pressable style={styles.dateDialog}>
+            <View style={styles.dateDialogAccent} />
+            <Text style={styles.dateDialogTitle}>CAMBIA DATA</Text>
+            <Text style={styles.dateDialogText}>Inserisci la data dell’allenamento</Text>
             <TextInput
               style={styles.dateInput}
               value={dateInput}
@@ -386,55 +491,30 @@ export default function SessionScreen() {
               keyboardType="number-pad"
               maxLength={10}
               autoCapitalize="none"
+              autoFocus
             />
-            <TouchableOpacity
-              style={styles.saveDateBtn}
-              onPress={handleUpdateDate}
-              disabled={updateSessionDate.isPending}
-            >
-              {updateSessionDate.isPending ? (
-                <ActivityIndicator color={colors.text} size="small" />
-              ) : (
-                <Text style={styles.saveDateBtnText}>SALVA</Text>
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.cancelDateBtn}
-              onPress={() => setIsEditingDate(false)}
-            >
-              <Text style={styles.cancelDateBtnText}>ANNULLA</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        <View style={styles.footerActions}>
-          <TouchableOpacity
-            style={styles.changeDateBtn}
-            onPress={startEditingDate}
-            disabled={updateSessionDate.isPending}
-          >
-            <Text style={styles.changeDateBtnText}>CAMBIA DATA</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.deleteSessionBtn}
-            onPress={handleDeleteSession}
-            disabled={deleteSession.isPending}
-          >
-            {deleteSession.isPending ? (
-              <ActivityIndicator color={colors.accent} size="small" />
-            ) : (
-              <Text style={styles.deleteSessionBtnText}>
-                ELIMINA ALLENAMENTO
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <ExercisePicker
-        visible={showPicker}
-        onClose={() => setShowPicker(false)}
-        onSelect={handleAddExercise}
-      />
+            <View style={styles.dateDialogActions}>
+              <TouchableOpacity
+                style={styles.cancelDateBtn}
+                onPress={() => setIsEditingDate(false)}
+              >
+                <Text style={styles.cancelDateBtnText}>ANNULLA</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.saveDateBtn}
+                onPress={handleUpdateDate}
+                disabled={updateSessionDate.isPending}
+              >
+                {updateSessionDate.isPending ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <Text style={styles.saveDateBtnText}>SALVA</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
       {confirmModal}
     </View>
   );
@@ -454,7 +534,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 13,
     fontWeight: "900",
-    color: colors.text,
+    color: '#fff',
     letterSpacing: 4,
   },
   headerDate: {
@@ -464,19 +544,20 @@ const styles = StyleSheet.create({
     textTransform: "capitalize",
     marginTop: 4,
   },
-  addExBtn: {
-    borderWidth: 1,
-    borderColor: colors.accent,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  addExBtnText: {
-    fontSize: 10,
-    fontWeight: "900",
-    color: colors.accent,
-    letterSpacing: 2,
-  },
   headerDivider: { height: 1, backgroundColor: colors.border },
+  offlineBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: colors.warning,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.warning,
+  },
+  offlineTitle: { color: colors.text, fontSize: 10, fontWeight: "900", letterSpacing: 2 },
+  offlineText: { color: colors.textMuted, fontSize: 11, marginTop: 3 },
+  syncError: { color: colors.danger, fontSize: 11, paddingHorizontal: 16, paddingVertical: 6, backgroundColor: colors.surface },
   scroll: { flex: 1 },
   content: { padding: 16, gap: 16, paddingBottom: 40 },
   exerciseGroup: {
@@ -524,8 +605,6 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 16,
     backgroundColor: colors.bg,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
   },
   addSetInput: {
     backgroundColor: colors.surface,
@@ -575,40 +654,21 @@ const styles = StyleSheet.create({
     color: colors.accent,
     letterSpacing: 3,
   },
-  footer: {
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    gap: 12,
-  },
-  footerActions: { flexDirection: "row", gap: 12 },
-  changeDateBtn: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-  changeDateBtnText: {
-    fontSize: 11,
-    fontWeight: "900",
-    color: colors.textMuted,
-    letterSpacing: 3,
-  },
-  deleteSessionBtn: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: colors.danger,
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-  deleteSessionBtnText: {
-    fontSize: 10,
-    fontWeight: "900",
-    color: colors.danger,
-    letterSpacing: 1,
-  },
-  dateEditor: { flexDirection: "row", gap: 8 },
+  fabWrap: { position: "absolute", right: 18, bottom: 24, alignItems: "center", zIndex: 20 },
+  fabBackdrop: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, backgroundColor: "rgba(0, 0, 0, 0.42)", zIndex: 18 },
+  fab: { width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: "center", justifyContent: "center", elevation: 5, shadowColor: "#000", shadowOpacity: 0.28, shadowRadius: 8, shadowOffset: { width: 0, height: 3 } },
+  fabOffline: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.accent },
+  fabMenu: { position: "absolute", right: 18, bottom: 116, alignItems: "flex-end", gap: 10, zIndex: 19 },
+  fabAction: { flexDirection: "row", alignItems: "center", gap: 10 },
+  fabActionLabel: { color: colors.text, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 10, paddingVertical: 7, fontSize: 9, fontWeight: "900", letterSpacing: 1 },
+  fabActionIcon: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.accent, alignItems: "center", justifyContent: "center", elevation: 4 },
+  fabDangerIcon: { backgroundColor: colors.danger },
+  dateDialogBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.72)", alignItems: "center", justifyContent: "center", padding: 24 },
+  dateDialog: { width: "100%", maxWidth: 420, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, padding: 20, gap: 14 },
+  dateDialogAccent: { width: 40, height: 2, backgroundColor: colors.accent },
+  dateDialogTitle: { color: colors.text, fontSize: 16, fontWeight: "900", letterSpacing: 4 },
+  dateDialogText: { color: colors.textMuted, fontSize: 13, lineHeight: 20 },
+  dateDialogActions: { flexDirection: "row", gap: 10, marginTop: 6 },
   dateInput: {
     flex: 1,
     backgroundColor: colors.surface,
@@ -624,20 +684,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.accent,
     backgroundColor: colors.accent,
-    paddingHorizontal: 14,
+    paddingVertical: 12,
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
   saveDateBtnText: {
     fontSize: 10,
     fontWeight: "900",
-    color: colors.text,
+    color: '#fff',
     letterSpacing: 2,
   },
   cancelDateBtn: {
     borderWidth: 1,
     borderColor: colors.border,
-    paddingHorizontal: 12,
+    paddingVertical: 12,
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },

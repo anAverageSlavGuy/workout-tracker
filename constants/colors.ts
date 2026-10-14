@@ -1,15 +1,15 @@
 export const colors = {
-  bg: 'whitesmoke',
+  bg: 'white',
   surface: '#f6f6f6',
   surfaceHigh: '#272727',
   border: '#272727',
-  accent: '#d41f2e',
-  accentDim: '#f3d2d6',
-  accentBright: '#ff3a4f',
-  text: '#272727',
+  accent: '#ff4105',
+  accentDim: 'rgba(255, 65, 5, 0.14)',
+  accentBright: '#ff6a3d',
+  text: '#575757',
   textMuted: '#4f4f4f',
   textDim: '#787878',
   danger: '#d71920',
-  warning: '#b56a00',
   silver: '#c7c7c7',
+  warning: '#ffd24c'
 }

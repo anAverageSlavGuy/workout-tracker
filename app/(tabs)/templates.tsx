@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
   createBtnText: {
     fontSize: 12,
     fontWeight: "900",
-    color: colors.text,
+    color: '#fff',
     letterSpacing: 4,
   },
 });
