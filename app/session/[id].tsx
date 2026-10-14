@@ -534,7 +534,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 13,
     fontWeight: "900",
-    color: '#fff',
+    color: colors.text,
     letterSpacing: 4,
   },
   headerDate: {

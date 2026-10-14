@@ -13,8 +13,8 @@ interface OfflineSessionRecord {
   updatedAt: string
 }
 
-const keyFor = (sessionId: string) => `ascent:offline-session:${sessionId}`
-const modeKeyFor = (sessionId: string) => `ascent:offline-mode:${sessionId}`
+const keyFor = (sessionId: string) => `pumping_iron:offline-session:${sessionId}`
+const modeKeyFor = (sessionId: string) => `pumping_iron:offline-mode:${sessionId}`
 
 function applyOperation(session: Session, operation: OfflineSessionOperation): Session {
   if (operation.type === 'insert_set') {
