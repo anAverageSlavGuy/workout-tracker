@@ -166,7 +166,7 @@ export default function SessionScreen() {
     if (isNaN(w) || isNaN(r) || r <= 0) return;
 
     if (isOffline) {
-      await offline.addSet({ session_id: id, exercise_id: exercise.id, set_number: maxSetNumber + 1, weight: w, reps: r, rpe: null, set_type: null });
+      await offline.addSet({ session_id: id, exercise_id: exercise.id, set_number: maxSetNumber + 1, weight: w, reps: r, rpe: null, set_type: null, exercises: exercise });
     } else {
       await addSet.mutateAsync({
         session_id: id,
@@ -248,7 +248,7 @@ export default function SessionScreen() {
             if (Platform.OS === "web") window.history.back();
           }}
         >
-          <Text style={styles.backChar}>↓</Text>
+          <Ionicons name="arrow-back" size={20} color={colors.textMuted} />
         </Pressable>
         <View style={{ flex: 1 }}>
           <Text style={styles.headerTitle}>ALLENAMENTO</Text>

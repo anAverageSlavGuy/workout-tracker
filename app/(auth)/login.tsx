@@ -78,7 +78,7 @@ export default function LoginScreen() {
         </View>
 
         <Text style={styles.title}>PUMPING IRON</Text>
-        <Text style={styles.subtitle}>track your ascension</Text>
+        <Text style={styles.subtitle}>track your progression</Text>
 
         <View style={styles.ornamentMid}>
           <View style={[styles.ornamentLine, { flex: 1 }]} />

@@ -2,11 +2,13 @@ import { useCallback, useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { Exercise, Session, SessionSet } from '../lib/types'
+import { checkNetworkQuality } from '../lib/networkStatus'
 import {
   addSetOffline,
   deleteSetOffline,
   getPendingOperationCount,
   getOfflineMode,
+  getAutomaticOfflineMode,
   setOfflineMode,
   syncSession,
   updateSessionDateOffline,
@@ -25,8 +27,24 @@ export function useOfflineWorkout(sessionId: string) {
   }, [sessionId])
 
   useEffect(() => {
+    let active = true
     void refreshPending()
-    void getOfflineMode(sessionId).then(setIsOfflineModeState)
+    void Promise.all([getOfflineMode(sessionId), getAutomaticOfflineMode()]).then(([savedMode, automaticMode]) => {
+      if (!active) return
+      setIsOfflineModeState(savedMode || automaticMode)
+      if (automaticMode && !savedMode) void setOfflineMode(sessionId, true)
+    })
+
+    // Also check at session level: the app-wide check and this screen can
+    // mount in parallel, so the automatic preference may not exist yet.
+    void checkNetworkQuality().then(({ quality }) => {
+      if (active && quality !== 'online') {
+        setIsOfflineModeState(true)
+        void setOfflineMode(sessionId, true)
+      }
+    })
+
+    return () => { active = false }
   }, [refreshPending, sessionId])
 
   const setIsOfflineMode = useCallback((enabled: boolean) => {
@@ -60,15 +78,30 @@ export function useOfflineWorkout(sessionId: string) {
 
   const updateSet = useCallback(async (input: { id: string; weight: number; reps: number; rpe?: number | null; set_type?: SessionSet['set_type'] }) => {
     const session = await updateSetOffline(sessionId, input)
-    updateCache(session)
+    // Update the visible query from the current cache as well as the local
+    // record. This avoids replacing the query with a stale snapshot when the
+    // offline operation is saved while SetRow is still finishing its edit.
+    qc.setQueryData<Session>(['session', sessionId], current => current
+      ? {
+          ...current,
+          session_sets: current.session_sets?.map(set =>
+            set.id === input.id ? { ...set, ...input } : set,
+          ),
+        }
+      : session)
     await refreshPending()
-  }, [refreshPending, sessionId, updateCache])
+  }, [qc, refreshPending, sessionId])
 
   const deleteSet = useCallback(async (input: { id: string }) => {
     const session = await deleteSetOffline(sessionId, input)
-    updateCache(session)
+    qc.setQueryData<Session>(['session', sessionId], current => current
+      ? {
+          ...current,
+          session_sets: current.session_sets?.filter(set => set.id !== input.id),
+        }
+      : session)
     await refreshPending()
-  }, [refreshPending, sessionId, updateCache])
+  }, [qc, refreshPending, sessionId])
 
   const updateDate = useCallback(async (date: string) => {
     const session = await updateSessionDateOffline(sessionId, date)

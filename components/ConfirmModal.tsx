@@ -127,5 +127,5 @@ const styles = StyleSheet.create({
   confirmBtnDanger: { borderColor: colors.danger, backgroundColor: colors.danger },
   cancelText: { color: colors.textMuted, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   confirmText: { color: '#fff', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
-  confirmTextDanger: { color: colors.text },
+  confirmTextDanger: { color: colors.bg },
 })

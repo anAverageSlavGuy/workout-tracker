@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { Platform } from 'react-native'
+import { Alert, Platform } from 'react-native'
+import * as Network from 'expo-network'
 
 // Suppress victory-native DOM prop warnings on web (known issue with RN props passed to DOM)
 if (Platform.OS === 'web' && typeof console !== 'undefined') {
@@ -15,6 +16,8 @@ import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/reac
 import { AuthProvider, useAuth } from '../lib/auth'
 import { StatusBar } from 'expo-status-bar'
 import { colors } from '../constants/colors'
+import { checkNetworkQuality } from '../lib/networkStatus'
+import { setAutomaticOfflineMode } from '../lib/offlineSession'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -26,6 +29,29 @@ function RootLayoutNav() {
   const segments = useSegments()
   const qc = useQueryClient()
   const previousUserId = useRef<string | null>(null)
+  const checkedNetworkForUser = useRef<string | null>(null)
+  const networkState = Network.useNetworkState()
+
+  useEffect(() => {
+    if (loading || !session || checkedNetworkForUser.current === session.user.id) return
+    if (networkState.isConnected === undefined && networkState.isInternetReachable === undefined) return
+
+    checkedNetworkForUser.current = session.user.id
+    void checkNetworkQuality().then(({ quality, latencyMs }) => {
+      const needsOfflineMode = quality !== 'online'
+      void setAutomaticOfflineMode(needsOfflineMode)
+
+      if (needsOfflineMode) {
+        Alert.alert(
+          'MODALITÀ OFFLINE ATTIVATA',
+          quality === 'slow'
+            ? `La connessione è lenta (${latencyMs ?? 1800} ms). Le modifiche all’allenamento verranno salvate sul dispositivo e sincronizzate quando possibile.`
+            : 'La connessione non è disponibile. Le modifiche all’allenamento verranno salvate sul dispositivo e sincronizzate quando possibile.',
+          [{ text: 'OK' }],
+        )
+      }
+    })
+  }, [loading, networkState.isConnected, networkState.isInternetReachable, session])
 
   useEffect(() => {
     if (loading) return

@@ -15,11 +15,15 @@ interface OfflineSessionRecord {
 
 const keyFor = (sessionId: string) => `pumping_iron:offline-session:${sessionId}`
 const modeKeyFor = (sessionId: string) => `pumping_iron:offline-mode:${sessionId}`
+const automaticModeKey = 'pumping_iron:automatic-offline-mode'
 
 function applyOperation(session: Session, operation: OfflineSessionOperation): Session {
   if (operation.type === 'insert_set') {
     const exists = session.session_sets?.some(set => set.id === operation.payload.id)
-    return exists ? session : { ...session, session_sets: [...(session.session_sets ?? []), operation.payload] }
+    if (exists) return session
+    const exercise = operation.payload.exercises ?? session.session_sets?.find(set => set.exercise_id === operation.payload.exercise_id)?.exercises
+    const payload = exercise ? { ...operation.payload, exercises: exercise } : operation.payload
+    return { ...session, session_sets: [...(session.session_sets ?? []), payload] }
   }
   if (operation.type === 'update_set') {
     return { ...session, session_sets: session.session_sets?.map(set => set.id === operation.payload.id ? { ...set, ...operation.payload } : set) }
@@ -63,6 +67,14 @@ export async function getOfflineMode(sessionId: string) {
 
 export async function setOfflineMode(sessionId: string, enabled: boolean) {
   await AsyncStorage.setItem(modeKeyFor(sessionId), String(enabled))
+}
+
+export async function getAutomaticOfflineMode() {
+  return (await AsyncStorage.getItem(automaticModeKey)) === 'true'
+}
+
+export async function setAutomaticOfflineMode(enabled: boolean) {
+  await AsyncStorage.setItem(automaticModeKey, String(enabled))
 }
 
 export async function getCachedSession(sessionId: string) {

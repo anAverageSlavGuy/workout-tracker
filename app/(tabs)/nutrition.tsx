@@ -434,7 +434,7 @@ export default function NutritionScreen() {
                   onPress={importMeal}
                   disabled={!jsonInput.trim() || busy}
                 >
-                  {busy ? <ActivityIndicator color={colors.text} /> : <Ionicons name="save" size={18} color={colors.text} />}
+                  {busy ? <ActivityIndicator color={colors.text} /> : <Ionicons name="save" size={18} color={colors.bg} />}
                   <Text style={styles.importBtnText}>SALVA</Text>
                 </TouchableOpacity>
               </View>
@@ -555,7 +555,7 @@ const styles = StyleSheet.create({
   templateBtn: { flex: 1, minHeight: 44, borderWidth: 1, borderColor: colors.accent, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 },
   templateBtnText: { color: colors.accent, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   importBtn: { minHeight: 44, minWidth: 110, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, paddingHorizontal: 14 },
-  importBtnText: { color: '#fff', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  importBtnText: { color: colors.bg, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   disabled: { opacity: 0.5 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
   sectionDot: { width: 5, height: 5, backgroundColor: colors.accent, transform: [{ rotate: '45deg' }] },
