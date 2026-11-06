@@ -70,14 +70,6 @@ export default function LoginScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.inner}>
-        {/* Decorative lines */}
-        <View style={styles.ornamentTop}>
-          <View style={styles.ornamentLine} />
-          <View style={styles.ornamentDiamond} />
-          <View style={styles.ornamentLine} />
-        </View>
-
-        <View style={styles.brandMark}><Text style={styles.brandMarkText}>PI</Text></View>
         <Text style={styles.title}>Pumping Iron</Text>
         <Text style={styles.subtitle}>Allenati. Tieni il ritmo.</Text>
 
@@ -145,11 +137,6 @@ export default function LoginScreen() {
           </TouchableOpacity>
         )}
 
-        <View style={styles.ornamentBottom}>
-          <View style={styles.ornamentLine} />
-          <View style={styles.ornamentDiamond} />
-          <View style={styles.ornamentLine} />
-        </View>
       </View>
 
       <ToastHost toast={toast} bottom={40} />
@@ -159,35 +146,7 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg, justifyContent: "center" },
-  inner: { marginHorizontal: 20, padding: 24, gap: 16, backgroundColor: colors.surface, borderRadius: 30, shadowColor: '#6b625c', shadowOpacity: 0.1, shadowRadius: 24, shadowOffset: { width: 0, height: 10 } },
-  ornamentTop: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 8,
-  },
-  ornamentBottom: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginTop: 8,
-  },
-  ornamentMid: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginVertical: 0,
-  },
-  ornamentLine: { height: 1, backgroundColor: '#eee8e2', flex: 1 },
-  ornamentDiamond: {
-    width: 6,
-    height: 6,
-    backgroundColor: colors.accent,
-    transform: [{ rotate: "45deg" }],
-  },
-  ornamentChar: { color: colors.accent, fontSize: 12 },
-  brandMark: { width: 54, height: 54, borderRadius: 18, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginBottom: 2 },
-  brandMarkText: { color: '#fff', fontSize: 20, fontWeight: '900', letterSpacing: -1 },
+  inner: { width: '92%', maxWidth: 520, minHeight: 560, alignSelf: 'center', justifyContent: 'center', padding: 30, gap: 16, backgroundColor: colors.surface, borderRadius: 30, shadowColor: '#6b625c', shadowOpacity: 0.1, shadowRadius: 24, shadowOffset: { width: 0, height: 10 } },
   title: {
     fontSize: 34,
     fontWeight: "900",
