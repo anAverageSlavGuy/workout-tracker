@@ -190,7 +190,7 @@ function ProgressRing({ label, value, goal, unit, color }: { label: string; valu
       </Svg>
       <View style={styles.ringCenter}>
         <Text style={styles.ringPct}>{Math.round((value / Math.max(goal, 1)) * 100)}%</Text>
-        <Text style={styles.ringValue}>{Math.round(value)}{unit}</Text>
+        <Text style={styles.ringValue}>{Math.round(value)}/{Math.round(goal)}</Text>
       </View>
       <Text style={styles.ringLabel}>{label}</Text>
     </View>
@@ -497,7 +497,7 @@ export default function NutritionScreen() {
               <Text style={styles.dayKcal}>{Math.round(historyDetailTotals.calories)} / {calorieGoal} kcal</Text>
             </View>
             <View style={styles.ringGrid}>
-              <ProgressRing label="KCAL" value={historyDetailTotals.calories} goal={calorieGoal} unit="" color={macroColors.calories} />
+              <ProgressRing label="KCAL" value={historyDetailTotals.calories} goal={calorieGoal} unit="kcal" color={macroColors.calories} />
               <ProgressRing label="PRO" value={historyDetailTotals.protein} goal={proteinGoal} unit="g" color={macroColors.protein} />
               <ProgressRing label="CARBO" value={historyDetailTotals.carbs} goal={carbsGoal} unit="g" color={macroColors.carbs} />
               <ProgressRing label="GRASSI" value={historyDetailTotals.fat} goal={fatGoal} unit="g" color={macroColors.fat} />
