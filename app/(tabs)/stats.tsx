@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, FlatList } from 'react-native'
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, FlatList, useWindowDimensions } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { VictoryChart, VictoryLine, VictoryBar, VictoryAxis, VictoryTheme } from 'victory-native'
+import { VictoryChart, VictoryLine, VictoryBar, VictoryAxis, VictoryTheme, VictoryScatter } from 'victory-native'
 import { subDays, format, eachWeekOfInterval, subWeeks } from 'date-fns'
 import { it } from 'date-fns/locale'
 import { useSessions } from '../../hooks/useSessions'
@@ -17,8 +17,8 @@ const chartTheme = {
   axis: {
     ...VictoryTheme.material.axis,
     style: {
-      axis: { stroke: colors.border },
-      grid: { stroke: colors.border, strokeDasharray: '4,4', strokeOpacity: 0.4 },
+      axis: { stroke: '#ded8d2' },
+      grid: { stroke: '#e4ded8', strokeDasharray: '4,4', strokeOpacity: 0.9 },
       ticks: { stroke: 'transparent' },
       tickLabels: { fill: colors.textMuted, fontSize: 9, fontFamily: 'monospace' },
     },
@@ -30,6 +30,8 @@ export default function StatsScreen() {
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null)
   const [showPicker, setShowPicker] = useState(false)
   const [volumeType, setVolumeType] = useState<VolumeType>('meccanico')
+  const { height: windowHeight } = useWindowDimensions()
+  const chartHeight = Math.max(380, Math.min(620, windowHeight * 0.58))
 
   const { data: sessions = [] } = useSessions()
   const { data: exercises = [] } = useExercises()
@@ -151,9 +153,6 @@ export default function StatsScreen() {
     <SafeAreaView style={styles.safe}>
       <ScrollView style={styles.scroll}>
         <View style={styles.headerWrap}>
-          <View style={styles.ornamentRow}>
-            <View style={styles.line} /><Text style={styles.ornamentChar}>✦</Text><View style={styles.line} />
-          </View>
           <Text style={styles.title}>STATISTICHE</Text>
         </View>
 
@@ -200,12 +199,9 @@ export default function StatsScreen() {
                   const maxY = Math.max(...yValues)
                   const padding = (maxY - minY) * 0.2 || 20
                   return (
-                    <VictoryChart theme={chartTheme} height={240} padding={{ left: 55, right: 24, top: 16, bottom: 40 }}>
+                    <VictoryChart theme={chartTheme} height={chartHeight} padding={{ left: 55, right: 24, top: 20, bottom: 48 }}>
                       <VictoryAxis
-                        tickFormat={(x: number) => {
-                          const dataPoint = progressionData[x as number]
-                          return dataPoint && x % 2 === 0 ? format(new Date(dataPoint.label), 'dd/MM') : ''
-                        }}
+                        tickFormat={() => ''}
                       />
                       <VictoryAxis
                         dependentAxis
@@ -215,6 +211,11 @@ export default function StatsScreen() {
                       <VictoryLine
                         data={progressionData}
                         style={{ data: { stroke: colors.accent, strokeWidth: 2 } }}
+                      />
+                      <VictoryScatter
+                        data={progressionData}
+                        size={4}
+                        style={{ data: { fill: colors.accent, stroke: colors.surface, strokeWidth: 2 } }}
                       />
                     </VictoryChart>
                   )
@@ -229,7 +230,7 @@ export default function StatsScreen() {
         {tab === 'frequenza' && (
           <View style={styles.section}>
             <Text style={styles.chartLabel}>SESSIONI PER SETTIMANA — ultime 12</Text>
-            <VictoryChart theme={chartTheme} height={240} padding={{ left: 44, right: 16, top: 16, bottom: 48 }}>
+            <VictoryChart theme={chartTheme} height={chartHeight} padding={{ left: 44, right: 16, top: 20, bottom: 56 }}>
               <VictoryAxis
                 tickFormat={(_: unknown, i: number) => i % 3 === 0 ? (weeklyData[i]?.x ?? '') : ''}
                 style={{ tickLabels: { angle: -30, fontSize: 9, fill: colors.textMuted } }}
@@ -267,7 +268,7 @@ export default function StatsScreen() {
               {' — ultimi 30 giorni'}
             </Text>
             {volumeData.length > 0 ? (
-              <VictoryChart theme={chartTheme} height={280} padding={{ left: 55, right: 16, top: 16, bottom: 40 }}>
+              <VictoryChart theme={chartTheme} height={chartHeight} padding={{ left: 55, right: 16, top: 20, bottom: 48 }}>
                 <VictoryAxis style={{ tickLabels: { fontSize: 9, fill: colors.textMuted } }} />
                 <VictoryAxis dependentAxis style={{ tickLabels: { fontSize: 9, fill: colors.textMuted } }} />
                 <VictoryBar horizontal data={volumeData} style={{ data: { fill: colors.accent } }} barWidth={18} />
@@ -313,28 +314,24 @@ export default function StatsScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   scroll: { flex: 1 },
-  headerWrap: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 12, gap: 8 },
-  ornamentRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  line: { flex: 1, height: 1, backgroundColor: colors.border },
-  ornamentChar: { color: colors.accent, fontSize: 12 },
-  title: { fontSize: 28, fontWeight: '900', color: colors.text, letterSpacing: 8 },
-  tabBar: { flexDirection: 'row', borderTopWidth: 1, borderBottomWidth: 1, borderColor: colors.border, marginBottom: 16 },
-  tabBtn: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRightWidth: 1, borderRightColor: colors.border },
+  headerWrap: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 14 },
+  title: { fontSize: 28, fontWeight: '900', color: colors.text, letterSpacing: 1 },
+  tabBar: { flexDirection: 'row', backgroundColor: colors.surface, marginHorizontal: 16, marginBottom: 16, padding: 4, borderRadius: 18 },
+  tabBtn: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 14 },
   tabActive: { backgroundColor: colors.accentDim },
   tabText: { fontSize: 9, color: colors.textMuted, letterSpacing: 3, fontWeight: '700' },
   tabTextActive: { color: colors.accent },
-  section: { paddingHorizontal: 16, paddingBottom: 32 },
+  section: { paddingHorizontal: 16, paddingBottom: 110 },
   chartLabel: { fontSize: 9, color: colors.textMuted, letterSpacing: 3, marginBottom: 8, marginTop: 8 },
-  picker: { borderWidth: 1, borderColor: colors.border, padding: 16, marginBottom: 16, backgroundColor: colors.surface },
+  picker: { borderRadius: 20, padding: 16, marginBottom: 16, backgroundColor: colors.surface, shadowColor: '#6b625c', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 5 } },
   pickerLabel: { fontSize: 9, color: colors.textMuted, letterSpacing: 3, marginBottom: 8 },
   pickerText: { color: colors.text, fontSize: 14 },
   progressSummary: { flexDirection: 'row', flexWrap: 'wrap', rowGap: 8, marginBottom: 16 },
   progressCard: {
     width: '50%',
     minHeight: 72,
-    borderWidth: 1,
-    borderColor: colors.border,
     backgroundColor: colors.surface,
+    borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 10,
     justifyContent: 'space-between',
@@ -355,15 +352,13 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 4,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
   volumeTypeBtnActive: {
     backgroundColor: colors.accentDim,
-    borderColor: colors.accent,
+    borderRadius: 14,
   },
   volumeTypeText: {
     fontSize: 9,

@@ -7,10 +7,10 @@ interface Props {
   size?: "small" | "medium";
 }
 
-function getActivationColor(percentage: number): string {
-  if (percentage >= 50) return "#4ade80"; // 🟢 Verde (alto)
-  if (percentage >= 20) return "#facc15"; // 🟡 Giallo (medio)
-  return "#ef4444"; // 🔴 Rosso (basso)
+function getActivationColor(percentage: number): { background: string; text: string } {
+  if (percentage >= 50) return { background: "#dff3e5", text: "#4e8a5c" };
+  if (percentage >= 20) return { background: "#fff1c9", text: "#a88431" };
+  return { background: "#fbe1de", text: "#ad665f" };
 }
 
 export function MuscleActivationBadges({ exercise, size = "small" }: Props) {
@@ -35,7 +35,7 @@ export function MuscleActivationBadges({ exercise, size = "small" }: Props) {
             style={[
               styles.badge,
               {
-                backgroundColor: color,
+                backgroundColor: color.background,
                 height: badgeHeight,
                 paddingHorizontal: paddingH,
               },
@@ -44,7 +44,7 @@ export function MuscleActivationBadges({ exercise, size = "small" }: Props) {
             <Text
               style={[
                 styles.badgeText,
-                { fontSize, lineHeight: badgeHeight },
+                { fontSize, lineHeight: badgeHeight, color: color.text },
               ]}
             >
               {em.muscle_groups?.name}
@@ -52,7 +52,7 @@ export function MuscleActivationBadges({ exercise, size = "small" }: Props) {
             <Text
               style={[
                 styles.badgePercent,
-                { fontSize: fontSize - 2, lineHeight: badgeHeight },
+                { fontSize: fontSize - 2, lineHeight: badgeHeight, color: color.text },
               ]}
             >
               {em.activation_percentage?.toFixed(0)}%
@@ -74,17 +74,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    borderRadius: 4,
+    borderRadius: 10,
     paddingVertical: 2,
     justifyContent: "center",
   },
   badgeText: {
     fontWeight: "600",
-    color: "#000",
+    color: colors.textMuted,
   },
   badgePercent: {
     fontWeight: "500",
-    color: "#000",
+    color: colors.textMuted,
     opacity: 0.7,
   },
 });

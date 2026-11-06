@@ -44,9 +44,9 @@ const mealOptions: Array<{ key: MealType; label: string }> = [
 
 const macroColors = {
   calories: colors.accent,
-  protein: '#2f80ed',
-  carbs: '#27ae60',
-  fat: '#f2c94c',
+  protein: '#789bc4',
+  carbs: '#82b38e',
+  fat: '#c9a957',
 }
 
 const jsonPlaceholder = `{
@@ -175,7 +175,7 @@ function ProgressRing({ label, value, goal, unit, color }: { label: string; valu
   return (
     <View style={styles.ringWrap}>
       <Svg width={size} height={size} style={styles.ringSvg}>
-        <Circle cx={size / 2} cy={size / 2} r={radius} stroke={colors.border} strokeWidth={stroke} fill="transparent" />
+        <Circle cx={size / 2} cy={size / 2} r={radius} stroke="#ebe5df" strokeWidth={stroke} fill="transparent" />
         <Circle
           cx={size / 2}
           cy={size / 2}
@@ -364,9 +364,6 @@ export default function NutritionScreen() {
     <SafeAreaView style={styles.safe}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <View style={styles.headerWrap}>
-          <View style={styles.ornamentRow}>
-            <View style={styles.line} /><Text style={styles.ornamentChar}>✦</Text><View style={styles.line} />
-          </View>
           <View style={styles.headerRow}>
             <View>
               <Text style={styles.title}>NUTRITION</Text>
@@ -434,7 +431,7 @@ export default function NutritionScreen() {
                   onPress={importMeal}
                   disabled={!jsonInput.trim() || busy}
                 >
-                  {busy ? <ActivityIndicator color={colors.text} /> : <Ionicons name="save" size={18} color={colors.bg} />}
+                  {busy ? <ActivityIndicator color="#fff" /> : <Ionicons name="save" size={18} color="#fff" />}
                   <Text style={styles.importBtnText}>SALVA</Text>
                 </TouchableOpacity>
               </View>
@@ -519,64 +516,61 @@ export default function NutritionScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   scroll: { flex: 1 },
-  content: { padding: 20, gap: 16 },
+  content: { padding: 20, paddingBottom: 110, gap: 16 },
   headerWrap: { gap: 10 },
-  ornamentRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  line: { flex: 1, height: 1, backgroundColor: colors.border },
-  ornamentChar: { color: colors.accent, fontSize: 12 },
   headerRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 },
-  title: { fontSize: 28, fontWeight: '900', color: colors.text, letterSpacing: 5 },
+  title: { fontSize: 28, fontWeight: '900', color: colors.text, letterSpacing: 1 },
   dateText: { fontSize: 10, color: colors.textMuted, letterSpacing: 2, textTransform: 'capitalize', marginTop: 4 },
-  modeTabs: { flexDirection: 'row', borderWidth: 1, borderColor: colors.border },
-  modeTab: { paddingHorizontal: 10, paddingVertical: 8, minWidth: 64, alignItems: 'center' },
-  modeTabActive: { backgroundColor: colors.accentDim },
+  modeTabs: { flexDirection: 'row', backgroundColor: colors.surface, padding: 4, borderRadius: 18 },
+  modeTab: { paddingHorizontal: 10, paddingVertical: 8, minWidth: 64, alignItems: 'center', borderRadius: 14 },
+  modeTabActive: { backgroundColor: colors.bg },
   modeTabText: { fontSize: 9, color: colors.textMuted, fontWeight: '900', letterSpacing: 1 },
   modeTabTextActive: { color: colors.accent },
   ringGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  ringWrap: { width: '48%', minWidth: 116, alignItems: 'center', borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, paddingVertical: 10, gap: 6 },
+  ringWrap: { width: '48%', minWidth: 116, alignItems: 'center', borderRadius: 22, backgroundColor: colors.surface, paddingVertical: 14, gap: 6, shadowColor: '#6b625c', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 5 } },
   ringSvg: { transform: [{ rotate: '0deg' }] },
   ringCenter: { position: 'absolute', top: 30, alignItems: 'center', width: 84 },
   ringPct: { color: colors.text, fontSize: 16, fontWeight: '900' },
   ringValue: { color: colors.textMuted, fontSize: 9, marginTop: 1 },
   ringLabel: { color: colors.textMuted, fontSize: 8, fontWeight: '900', letterSpacing: 2 },
-  composer: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: 14, gap: 12 },
+  composer: { borderRadius: 24, backgroundColor: colors.surface, padding: 16, gap: 12, shadowColor: '#6b625c', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 5 } },
   dateSelector: { flexDirection: 'row', gap: 6, alignItems: 'center', width: '100%' },
-  dateArrowBtn: { width: 34, height: 36, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg, flexShrink: 0 },
-  dateInput: { flex: 1, minWidth: 0, height: 36, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.bg, color: colors.text, paddingHorizontal: 8, fontSize: 12, fontWeight: '700' },
-  dateTodayBtn: { width: 48, height: 36, borderWidth: 1, borderColor: colors.accent, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accentDim, flexShrink: 0 },
+  dateArrowBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg, flexShrink: 0 },
+  dateInput: { flex: 1, minWidth: 0, height: 36, borderRadius: 18, backgroundColor: colors.bg, color: colors.text, paddingHorizontal: 14, fontSize: 12, fontWeight: '700' },
+  dateTodayBtn: { width: 52, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accentDim, flexShrink: 0 },
   dateTodayText: { color: colors.accent, fontSize: 9, fontWeight: '900', letterSpacing: 1 },
   mealTypeRow: { gap: 8 },
-  mealTypeBtn: { height: 30, paddingHorizontal: 10, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
-  mealTypeBtnActive: { backgroundColor: colors.accentDim, borderColor: colors.accent },
+  mealTypeBtn: { height: 32, paddingHorizontal: 12, borderRadius: 16, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' },
+  mealTypeBtnActive: { backgroundColor: colors.accentDim },
   mealTypeBtnText: { fontSize: 8, fontWeight: '900', letterSpacing: 1, color: colors.textMuted },
   mealTypeBtnTextActive: { color: colors.accent },
-  messageInput: { minHeight: 154, maxHeight: 260, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.bg, color: colors.text, padding: 12, fontSize: 13, lineHeight: 18, textAlignVertical: 'top', fontFamily: Platform.OS === 'web' ? 'monospace' : undefined },
+  messageInput: { minHeight: 154, maxHeight: 260, borderRadius: 18, backgroundColor: colors.bg, color: colors.text, padding: 14, fontSize: 13, lineHeight: 18, textAlignVertical: 'top', fontFamily: Platform.OS === 'web' ? 'monospace' : undefined },
   actionRow: { flexDirection: 'row', gap: 10 },
-  templateBtn: { flex: 1, minHeight: 44, borderWidth: 1, borderColor: colors.accent, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 },
+  templateBtn: { flex: 1, minHeight: 44, borderRadius: 17, backgroundColor: colors.accentDim, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 },
   templateBtnText: { color: colors.accent, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
-  importBtn: { minHeight: 44, minWidth: 110, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, paddingHorizontal: 14 },
-  importBtnText: { color: colors.bg, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
+  importBtn: { minHeight: 44, minWidth: 110, borderRadius: 17, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, paddingHorizontal: 14 },
+  importBtnText: { color: '#fff', fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   disabled: { opacity: 0.5 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
-  sectionDot: { width: 5, height: 5, backgroundColor: colors.accent, transform: [{ rotate: '45deg' }] },
-  sectionTitle: { fontSize: 10, color: colors.textMuted, letterSpacing: 4, fontWeight: '900' },
-  mealCard: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: 14, gap: 10 },
+  sectionDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.accent },
+  sectionTitle: { fontSize: 20, color: colors.text, letterSpacing: 0, fontWeight: '900' },
+  mealCard: { backgroundColor: colors.surface, borderRadius: 20, padding: 16, gap: 10, shadowColor: '#6b625c', shadowOpacity: 0.07, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } },
   mealTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
   mealType: { fontSize: 8, color: colors.accent, fontWeight: '900', letterSpacing: 2, marginBottom: 5 },
   mealSummary: { color: colors.text, fontSize: 14, fontWeight: '700', lineHeight: 20 },
   mealActions: { flexDirection: 'row', gap: 8 },
-  iconBtn: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border },
+  iconBtn: { width: 34, height: 34, borderRadius: 14, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' },
   macroRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' },
   kcal: { color: colors.text, fontSize: 12, fontWeight: '900' },
   macroText: { color: colors.textMuted, fontSize: 11, fontWeight: '700' },
   confidence: { color: colors.textDim, fontSize: 10, marginLeft: 'auto' },
   empty: { color: colors.textMuted, textAlign: 'center', marginVertical: 24, letterSpacing: 1 },
   historyWrap: { gap: 18 },
-  dayBlock: { gap: 8 },
+  dayBlock: { gap: 8, backgroundColor: colors.bg, borderRadius: 22, padding: 4 },
   dayHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },
   dayDate: { color: colors.text, fontSize: 12, fontWeight: '900', letterSpacing: 2 },
   dayKcal: { color: colors.accent, fontSize: 11, fontWeight: '900' },
-  backToHistoryBtn: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 10, paddingVertical: 8 },
+  backToHistoryBtn: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 16, backgroundColor: colors.surface, paddingHorizontal: 12, paddingVertical: 9 },
   backToHistoryText: { color: colors.accent, fontSize: 10, fontWeight: '900', letterSpacing: 2 },
   dayDetailHeader: { gap: 6 },
   dayDetailTitle: { color: colors.text, fontSize: 20, fontWeight: '900', letterSpacing: 1, textTransform: 'capitalize' },

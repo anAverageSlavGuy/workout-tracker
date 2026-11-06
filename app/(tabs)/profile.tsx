@@ -66,9 +66,6 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-        <View style={styles.ornamentRow}>
-          <View style={styles.line} /><Text style={styles.ornamentChar}>✦</Text><View style={styles.line} />
-        </View>
         <View style={styles.headerRow}>
           <Text style={styles.title}>PROFILO</Text>
         </View>
@@ -150,7 +147,6 @@ export default function ProfileScreen() {
 
         <View style={{ flex: 1 }} />
         <View style={styles.ornamentBottom}>
-          <View style={styles.line} /><Text style={styles.ornamentChar}>✦</Text><View style={styles.line} />
         </View>
         <Text style={styles.version}>PUMPING IRON v1.0.0</Text>
       </ScrollView>
@@ -162,26 +158,22 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   scroll: { flex: 1 },
-  content: { flexGrow: 1, padding: 24, gap: 24 },
-  ornamentRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  ornamentBottom: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  line: { flex: 1, height: 1, backgroundColor: colors.border },
-  ornamentChar: { color: colors.accent, fontSize: 12 },
-  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 8 },
-  title: { fontSize: 28, fontWeight: '900', color: colors.text, letterSpacing: 8 },
-  card: { flexDirection: 'row', borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: 16, gap: 16 },
-  cardAccent: { width: 2, backgroundColor: colors.accent },
+  content: { flexGrow: 1, padding: 20, paddingBottom: 110, gap: 18 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 2 },
+  title: { fontSize: 28, fontWeight: '900', color: colors.text, letterSpacing: 1 },
+  card: { flexDirection: 'row', borderRadius: 22, backgroundColor: colors.surface, padding: 18, gap: 16, shadowColor: '#6b625c', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 5 } },
+  cardAccent: { width: 5, borderRadius: 3, backgroundColor: colors.accent },
   label: { fontSize: 9, color: colors.textMuted, letterSpacing: 3, marginBottom: 8 },
   value: { fontSize: 15, color: colors.text },
-  section: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: 16, gap: 12 },
-  sectionTitle: { fontSize: 10, color: colors.textMuted, fontWeight: '900', letterSpacing: 4 },
+  section: { borderRadius: 22, backgroundColor: colors.surface, padding: 18, gap: 12, shadowColor: '#6b625c', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 5 } },
+  sectionTitle: { fontSize: 18, color: colors.text, fontWeight: '900', letterSpacing: 0 },
   formGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   field: { flex: 1, minWidth: 130, gap: 6 },
   inputLabel: { fontSize: 8, color: colors.textMuted, fontWeight: '900', letterSpacing: 2 },
-  input: { borderWidth: 1, borderColor: colors.border, color: colors.text, backgroundColor: colors.bg, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14 },
-  saveBtn: { backgroundColor: colors.accent, paddingVertical: 12, alignItems: 'center', marginTop: 4 },
+  input: { borderRadius: 14, color: colors.text, backgroundColor: colors.bg, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14 },
+  saveBtn: { backgroundColor: colors.accent, borderRadius: 16, paddingVertical: 13, alignItems: 'center', marginTop: 4 },
   saveBtnText: { color: '#fff', fontSize: 11, fontWeight: '900', letterSpacing: 3 },
-  signOutBtn: { borderWidth: 1, borderColor: colors.accent, paddingVertical: 12, alignItems: 'center', marginTop: 16 },
+  signOutBtn: { backgroundColor: colors.accentDim, borderRadius: 16, paddingVertical: 13, alignItems: 'center', marginTop: 2 },
   signOutBtnDisabled: { opacity: 0.5 },
   signOutText: { color: colors.accent, fontSize: 11, fontWeight: '900', letterSpacing: 4 },
   version: { textAlign: 'center', color: colors.textDim, fontSize: 9, letterSpacing: 3 },

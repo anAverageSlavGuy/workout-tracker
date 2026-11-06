@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, ActivityIndicator, Platform } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
 import { useIsAdmin } from '../../hooks/useAdmin'
 import { useEquipmentTypes, useExercisesAdmin, useExerciseMuscles, useMuscleGroupsAdmin } from '../../hooks/useAdminQueries'
 import { useCreateEquipment, useUpdateEquipment, useDeleteEquipment, useCreateMuscleGroup, useUpdateMuscleGroup, useDeleteMuscleGroup, useCreateExerciseAdmin, useUpdateExerciseAdmin, useDeleteExerciseAdmin, useCreateExerciseMuscle, useUpdateExerciseMuscle, useDeleteExerciseMuscle } from '../../hooks/useAdminMutations'
@@ -52,7 +53,9 @@ export default function AdminScreen() {
           router.replace('/(tabs)')
           if (Platform.OS === 'web') window.history.back()
         }}>
-          <Text style={styles.closeBtn}>✕</Text>
+          <View style={styles.closeBtn}>
+            <Ionicons name="close" size={25} color={colors.textMuted} />
+          </View>
         </TouchableOpacity>
       </View>
 
@@ -122,7 +125,7 @@ function EquipmentSection() {
                 deleteEq(item.id)
               }
             }} style={styles.deleteBtn}>
-              <Text style={styles.deleteBtnText}>✕</Text>
+              <Ionicons name="close" size={23} color={colors.danger} />
             </TouchableOpacity>
           </View>
         )}
@@ -178,7 +181,7 @@ function MusclesSection() {
                 deleteMuscle(item.id)
               }
             }} style={styles.deleteBtn}>
-              <Text style={styles.deleteBtnText}>✕</Text>
+              <Ionicons name="close" size={23} color={colors.danger} />
             </TouchableOpacity>
           </View>
         )}
@@ -265,7 +268,7 @@ function ExercisesSection() {
                 deleteEx(item.id)
               }
             }} style={styles.deleteBtn}>
-              <Text style={styles.deleteBtnText}>✕</Text>
+              <Ionicons name="close" size={23} color={colors.danger} />
             </TouchableOpacity>
           </View>
         )}
@@ -363,7 +366,7 @@ function MappingsSection() {
                     deleteMuscleMapping({ exercise_id: selectedExerciseId, muscle_group_id: item.muscle_group_id })
                   }
                 }} style={styles.deleteBtn}>
-                  <Text style={styles.deleteBtnText}>✕</Text>
+                  <Ionicons name="close" size={23} color={colors.danger} />
                 </TouchableOpacity>
               </View>
             )}
@@ -380,30 +383,29 @@ function MappingsSection() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   loading: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg },
-  notAllowed: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 24 },
+  notAllowed: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 24, padding: 24 },
   notAllowedText: { fontSize: 16, color: colors.textMuted, letterSpacing: 2 },
-  backBtn: { borderWidth: 1, borderColor: colors.accent, paddingHorizontal: 24, paddingVertical: 12 },
-  backBtnText: { color: colors.accent, fontWeight: '900', letterSpacing: 2 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border },
-  title: { fontSize: 14, fontWeight: '900', color: colors.text, letterSpacing: 5 },
-  closeBtn: { fontSize: 16, color: colors.textMuted },
-  tabBar: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: colors.border },
-  tab: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRightWidth: 1, borderRightColor: colors.border },
+  backBtn: { backgroundColor: colors.accent, borderRadius: 17, paddingHorizontal: 24, paddingVertical: 13 },
+  backBtnText: { color: '#fff', fontWeight: '900', letterSpacing: 1 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 20, paddingBottom: 14 },
+  title: { fontSize: 28, fontWeight: '900', color: colors.text, letterSpacing: 1 },
+  closeBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
+  tabBar: { flexDirection: 'row', backgroundColor: colors.surface, marginHorizontal: 16, marginBottom: 4, padding: 4, borderRadius: 18 },
+  tab: { flex: 1, minHeight: 58, paddingHorizontal: 4, paddingVertical: 8, alignItems: 'center', justifyContent: 'center', borderRadius: 14 },
   tabActive: { backgroundColor: colors.accentDim },
-  tabText: { fontSize: 8, color: colors.textMuted, fontWeight: '700', letterSpacing: 2 },
+  tabText: { fontSize: 8, lineHeight: 11, textAlign: 'center', color: colors.textMuted, fontWeight: '700', letterSpacing: 2 },
   tabTextActive: { color: colors.accent },
   scroll: { flex: 1 },
-  section: { padding: 16, gap: 12, paddingBottom: 40 },
-  sectionTitle: { fontSize: 11, color: colors.textMuted, fontWeight: '700', letterSpacing: 2, marginBottom: 8 },
+  section: { margin: 16, padding: 18, gap: 12, paddingBottom: 40, borderRadius: 22, backgroundColor: colors.surface, shadowColor: '#6b625c', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 5 } },
+  sectionTitle: { fontSize: 18, color: colors.text, fontWeight: '900', letterSpacing: 0, marginBottom: 8 },
   label: { fontSize: 9, color: colors.textMuted, letterSpacing: 2, marginTop: 12 },
-  input: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, paddingHorizontal: 12, paddingVertical: 8, color: colors.text, borderRadius: 4, fontSize: 14 },
-  submitBtn: { borderWidth: 1, borderColor: colors.accent, paddingVertical: 12, alignItems: 'center', marginTop: 8 },
-  submitBtnText: { color: colors.accent, fontWeight: '900', fontSize: 11, letterSpacing: 2 },
-  listContainer: { maxHeight: 300, borderWidth: 1, borderColor: colors.border, borderRadius: 4, overflow: 'hidden' },
-  listItem: { flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: colors.border, paddingVertical: 12, paddingHorizontal: 12, gap: 12 },
+  input: { backgroundColor: colors.bg, paddingHorizontal: 12, paddingVertical: 11, color: colors.text, borderRadius: 14, fontSize: 14 },
+  submitBtn: { backgroundColor: colors.accent, borderRadius: 16, paddingVertical: 13, alignItems: 'center', marginTop: 8 },
+  submitBtnText: { color: '#fff', fontWeight: '900', fontSize: 11, letterSpacing: 1 },
+  listContainer: { maxHeight: 300, borderRadius: 16, overflow: 'hidden', backgroundColor: '#f1eeeb' },
+  listItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 16, paddingHorizontal: 14, gap: 12, borderBottomWidth: 1, borderBottomColor: '#e2ddd8' },
   listItemText: { color: colors.text, fontSize: 13, fontWeight: '600' },
   listItemSub: { color: colors.textMuted, fontSize: 10, marginTop: 4 },
-  deleteBtn: { padding: 8 },
-  deleteBtnText: { color: colors.danger, fontSize: 14 },
+  deleteBtn: { width: 42, height: 42, borderRadius: 15, backgroundColor: '#fbe1de', alignItems: 'center', justifyContent: 'center' },
   empty: { textAlign: 'center', color: colors.textMuted, marginTop: 20, letterSpacing: 1 },
 })

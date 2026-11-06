@@ -24,9 +24,6 @@ export default function MoreScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.content}>
-        <View style={styles.ornamentRow}>
-          <View style={styles.line} /><Text style={styles.ornamentChar}>✦</Text><View style={styles.line} />
-        </View>
         <Text style={styles.title}>ALTRO</Text>
 
         <View style={styles.list}>
@@ -50,14 +47,11 @@ export default function MoreScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  content: { flex: 1, padding: 24, gap: 18 },
-  ornamentRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  line: { flex: 1, height: 1, backgroundColor: colors.border },
-  ornamentChar: { color: colors.accent, fontSize: 12 },
-  title: { fontSize: 28, fontWeight: '900', color: colors.text, letterSpacing: 8, marginBottom: 4 },
-  list: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, borderBottomWidth: 0 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border },
-  iconBox: { width: 40, height: 40, borderWidth: 1, borderColor: colors.accent, backgroundColor: colors.accentDim, alignItems: 'center', justifyContent: 'center' },
+  content: { flex: 1, padding: 20, paddingTop: 24, gap: 18 },
+  title: { fontSize: 28, fontWeight: '900', color: colors.text, letterSpacing: 1, marginBottom: 4 },
+  list: { gap: 10 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 22, backgroundColor: colors.surface, shadowColor: '#6b625c', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 5 } },
+  iconBox: { width: 44, height: 44, borderRadius: 16, backgroundColor: colors.accentDim, alignItems: 'center', justifyContent: 'center' },
   rowTitle: { color: colors.text, fontSize: 13, fontWeight: '900', letterSpacing: 2 },
   rowSub: { color: colors.textMuted, fontSize: 11, marginTop: 4 },
 })

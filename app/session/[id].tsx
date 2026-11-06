@@ -256,10 +256,11 @@ export default function SessionScreen() {
             if (Platform.OS === "web") window.history.back();
           }}
         >
-          <Ionicons name="arrow-back" size={20} color={colors.textMuted} />
+          <View style={styles.backCircle}><Ionicons name="arrow-back" size={18} color={colors.text} /></View>
         </Pressable>
         <View style={{ flex: 1 }}>
-          <Text style={styles.headerTitle}>ALLENAMENTO</Text>
+          <Text style={styles.headerEyebrow}>SESSIONE</Text>
+          <Text style={styles.headerTitle}>Allenamento</Text>
           <Text style={styles.headerDate}>
             {format(new Date(session.date), "EEEE d MMMM", { locale: it })}
           </Text>
@@ -310,7 +311,6 @@ export default function SessionScreen() {
       >
         {setsByExercise.length === 0 && (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyOrnament}>✦</Text>
             <Text style={styles.emptyTitle}>NESSUN ESERCIZIO</Text>
             <Text style={styles.emptyText}>
               Aggiungi il primo esercizio per iniziare
@@ -536,52 +536,53 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  header: { flexDirection: "row", alignItems: "center", padding: 16, gap: 8 },
-  backBtn: { padding: 8 },
+  header: { flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingTop: 20, paddingBottom: 14, gap: 12 },
+  backBtn: { padding: 0 },
+  backCircle: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   backChar: { color: colors.textMuted, fontSize: 20 },
+  headerEyebrow: { fontSize: 10, fontWeight: '800', color: colors.textDim, letterSpacing: 2 },
   headerTitle: {
-    fontSize: 13,
+    fontSize: 24,
     fontWeight: "900",
     color: colors.text,
-    letterSpacing: 4,
+    marginTop: 2,
   },
   headerDate: {
-    fontSize: 10,
+    fontSize: 12,
     color: colors.textMuted,
-    letterSpacing: 2,
     textTransform: "capitalize",
     marginTop: 4,
   },
-  headerDivider: { height: 1, backgroundColor: colors.border },
+  headerDivider: { height: 0 },
   offlineBar: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: colors.warning,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.warning,
+    backgroundColor: '#fff1c9',
+    marginHorizontal: 16,
+    borderRadius: 18,
   },
   offlineTitle: { color: colors.text, fontSize: 10, fontWeight: "900", letterSpacing: 2 },
   offlineText: { color: colors.textMuted, fontSize: 11, marginTop: 3 },
   syncError: { color: colors.danger, fontSize: 11, paddingHorizontal: 16, paddingVertical: 6, backgroundColor: colors.surface },
   scroll: { flex: 1 },
-  content: { padding: 16, gap: 16, paddingBottom: 40 },
+  content: { padding: 16, gap: 12, paddingBottom: 110 },
   exerciseGroup: {
-    borderWidth: 1,
-    borderColor: colors.border,
     backgroundColor: colors.surface,
+    borderRadius: 22,
+    overflow: 'hidden',
+    shadowColor: '#6b625c', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 5 },
   },
   exerciseHeader: {
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
     gap: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomWidth: 0,
   },
-  exAccentBar: { width: 3, height: 36, backgroundColor: colors.accent },
+  exAccentBar: { width: 5, height: 42, borderRadius: 3, backgroundColor: colors.accent },
   exerciseName: {
     fontSize: 13,
     fontWeight: "900",
@@ -599,7 +600,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: colors.bg,
+    backgroundColor: '#faf7f3',
   },
   setHeaderText: {
     fontSize: 9,
@@ -612,7 +613,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     padding: 16,
-    backgroundColor: colors.bg,
+    backgroundColor: '#faf7f3',
   },
   addSetInput: {
     backgroundColor: colors.surface,
@@ -621,16 +622,15 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     fontSize: 15,
     width: 68,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: 12,
     textAlign: "center",
   },
   addSetUnit: { fontSize: 11, color: colors.textMuted },
   addSetCross: { fontSize: 11, color: colors.textDim, marginHorizontal: 8 },
   addSetBtn: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: colors.accent,
+    borderRadius: 14,
+    backgroundColor: colors.accentDim,
     paddingVertical: 8,
     alignItems: "center",
   },
@@ -651,15 +651,15 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 13, color: colors.textMuted, letterSpacing: 1 },
   emptyBtn: {
     marginTop: 8,
-    borderWidth: 1,
-    borderColor: colors.accent,
     paddingHorizontal: 24,
     paddingVertical: 12,
+    backgroundColor: colors.accent,
+    borderRadius: 17,
   },
   emptyBtnText: {
     fontSize: 11,
     fontWeight: "900",
-    color: colors.accent,
+    color: '#fff',
     letterSpacing: 3,
   },
   fabWrap: { position: "absolute", right: 18, bottom: 24, alignItems: "center", zIndex: 20 },
@@ -668,11 +668,11 @@ const styles = StyleSheet.create({
   fabOffline: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.accent },
   fabMenu: { position: "absolute", right: 18, bottom: 116, alignItems: "flex-end", gap: 10, zIndex: 19 },
   fabAction: { flexDirection: "row", alignItems: "center", gap: 10 },
-  fabActionLabel: { color: colors.text, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 10, paddingVertical: 7, fontSize: 9, fontWeight: "900", letterSpacing: 1 },
+  fabActionLabel: { color: colors.text, backgroundColor: colors.surface, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 9, fontSize: 9, fontWeight: "900", letterSpacing: 1 },
   fabActionIcon: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.accent, alignItems: "center", justifyContent: "center", elevation: 4 },
   fabDangerIcon: { backgroundColor: colors.danger },
   dateDialogBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.72)", alignItems: "center", justifyContent: "center", padding: 24 },
-  dateDialog: { width: "100%", maxWidth: 420, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, padding: 20, gap: 14 },
+  dateDialog: { width: "100%", maxWidth: 420, backgroundColor: colors.surface, borderRadius: 26, padding: 20, gap: 14 },
   dateDialogAccent: { width: 40, height: 2, backgroundColor: colors.accent },
   dateDialogTitle: { color: colors.text, fontSize: 16, fontWeight: "900", letterSpacing: 4 },
   dateDialogText: { color: colors.textMuted, fontSize: 13, lineHeight: 20 },
@@ -681,17 +681,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.surface,
     color: colors.text,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: 14,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 13,
     letterSpacing: 1,
   },
   saveDateBtn: {
-    borderWidth: 1,
-    borderColor: colors.accent,
     backgroundColor: colors.accent,
+    borderRadius: 16,
     paddingVertical: 12,
     flex: 1,
     justifyContent: "center",
@@ -704,8 +702,8 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   cancelDateBtn: {
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: colors.bg,
+    borderRadius: 16,
     paddingVertical: 12,
     flex: 1,
     justifyContent: "center",

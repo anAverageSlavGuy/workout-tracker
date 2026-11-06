@@ -15,14 +15,25 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          borderTopWidth: 1,
-          height: 56,
+          backgroundColor: colors.surfaceHigh,
+          borderTopColor: 'transparent',
+          borderTopWidth: 0,
+          height: 74,
+          paddingTop: 8,
+          paddingBottom: 10,
+          marginHorizontal: 14,
+          marginBottom: 12,
+          borderRadius: 28,
+          position: 'absolute',
+          elevation: 8,
+          shadowColor: '#171614',
+          shadowOpacity: 0.16,
+          shadowRadius: 18,
+          shadowOffset: { width: 0, height: 8 },
         },
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textDim,
-        tabBarLabelStyle: { fontSize: 10, letterSpacing: 1, textTransform: 'uppercase' },
+        tabBarLabelStyle: { fontSize: 10, fontWeight: '700' },
       }}
     >
       <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: ({ focused }) => icon('home', focused) }} />

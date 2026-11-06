@@ -132,11 +132,6 @@ export default function TemplatesScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.headerWrap}>
-        <View style={styles.ornamentRow}>
-          <View style={styles.line} />
-          <Text style={styles.ornamentChar}>✦</Text>
-          <View style={styles.line} />
-        </View>
         <View style={styles.headerRow}>
           <Text style={styles.title}>SCHEDE</Text>
           <TouchableOpacity
@@ -152,9 +147,7 @@ export default function TemplatesScreen() {
         data={templates}
         keyExtractor={(t) => t.id}
         contentContainerStyle={styles.list}
-        ItemSeparatorComponent={() => (
-          <View style={{ height: 1, backgroundColor: colors.border }} />
-        )}
+        ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
         ListEmptyComponent={
           <Text style={styles.empty}>
             {isLoading ? "..." : "Nessuna scheda. Creane una."}
@@ -394,14 +387,10 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   headerWrap: {
     paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 12,
-    gap: 8,
+    paddingTop: 20,
+    paddingBottom: 16,
   },
-  ornamentRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  line: { flex: 1, height: 1, backgroundColor: colors.border },
-  line2: { height: 1, backgroundColor: colors.border, marginBottom: 16 },
-  ornamentChar: { color: colors.accent, fontSize: 12 },
+  line2: { height: 0, marginBottom: 4 },
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -411,26 +400,28 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "900",
     color: colors.text,
-    letterSpacing: 8,
+    letterSpacing: 1,
   },
   addBtn: {
-    width: 32,
-    height: 32,
-    borderWidth: 1,
-    borderColor: colors.accent,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.accentDim,
     alignItems: "center",
     justifyContent: "center",
   },
-  list: { paddingTop: 0 },
+  list: { paddingTop: 0, paddingHorizontal: 16, paddingBottom: 110 },
   card: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 16,
+    paddingVertical: 18,
     paddingHorizontal: 16,
     gap: 16,
-    backgroundColor: colors.bg,
+    backgroundColor: colors.surface,
+    borderRadius: 22,
+    shadowColor: '#6b625c', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 5 },
   },
-  cardAccent: { width: 2, height: 40, backgroundColor: colors.accent },
+  cardAccent: { width: 5, height: 42, borderRadius: 3, backgroundColor: colors.accent },
   cardName: {
     fontSize: 14,
     fontWeight: "900",
@@ -438,7 +429,7 @@ const styles = StyleSheet.create({
     letterSpacing: 3,
   },
   cardSub: { fontSize: 11, color: colors.textMuted, marginTop: 4 },
-  actionBtn: { padding: 8 },
+  actionBtn: { padding: 10, borderRadius: 14, backgroundColor: colors.bg },
   actionBtnDisabled: { opacity: 0.4 },
   empty: {
     textAlign: "center",
@@ -464,8 +455,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 14,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: 16,
     letterSpacing: 2,
   },
   pickLabel: {
@@ -500,6 +490,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: "center",
     marginTop: 8,
+    borderRadius: 17,
   },
   createBtnDisabled: { opacity: 0.4 },
   createBtnText: {

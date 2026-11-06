@@ -49,16 +49,14 @@ export default function DashboardScreen() {
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.ornamentRow}>
-            <View style={styles.line} />
-            <Text style={styles.ornamentChar}>✦</Text>
-            <View style={styles.line} />
+          <View style={styles.headerTop}>
+            <View>
+              <Text style={styles.eyebrow}>BUONGIORNO</Text>
+              <Text style={styles.greeting}>{user?.email?.split("@")[0]}</Text>
+            </View>
+            <View style={styles.avatar}><Text style={styles.avatarText}>{(user?.email?.[0] ?? 'P').toUpperCase()}</Text></View>
           </View>
-          <Text style={styles.appName}>PUMPING IRON</Text>
-          <Text style={styles.greeting}>{user?.email?.split("@")[0]}</Text>
-          <Text style={styles.dateText}>
-            {format(today, "EEEE d MMMM", { locale: it })}
-          </Text>
+          <Text style={styles.dateText}>{format(today, "EEEE d MMMM", { locale: it })}</Text>
         </View>
 
         {/* Start button */}
@@ -67,23 +65,22 @@ export default function DashboardScreen() {
           onPress={() => setShowModal(true)}
         >
           <View style={styles.startBtnInner}>
-            <Text style={styles.startBtnLabel}>INIZIA ALLENAMENTO</Text>
-            <View style={styles.startBtnLine} />
+            <View><Text style={styles.startEyebrow}>PRONTO A SPINGERE?</Text><Text style={styles.startBtnLabel}>Inizia allenamento</Text></View>
+            <View style={styles.startIcon}><Text style={styles.startIconText}>↗</Text></View>
           </View>
         </TouchableOpacity>
 
         {/* Stats */}
         <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <Text style={styles.statNum}>{thisWeek}</Text>
+          <View style={[styles.statCard, styles.statCardDark]}>
+            <Text style={[styles.statNum, styles.statNumLight]}>{thisWeek}</Text>
             <View style={styles.statDivider} />
-            <Text style={styles.statLabel}>SETTIMANA</Text>
+            <Text style={[styles.statLabel, styles.statLabelLight]}>SETTIMANA</Text>
           </View>
-          <View style={styles.statSep} />
           <View style={styles.statCard}>
             <Text style={styles.statNum}>{thisMonth}</Text>
             <View style={styles.statDivider} />
-            <Text style={styles.statLabel}>MESE</Text>
+            <Text style={styles.statLabel}>QUESTO MESE</Text>
           </View>
         </View>
 
@@ -91,8 +88,10 @@ export default function DashboardScreen() {
         {recent.length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <View style={styles.sectionDot} />
-              <Text style={styles.sectionTitle}>ULTIMI ALLENAMENTI</Text>
+              <Text style={styles.sectionTitle}>Ultimi allenamenti</Text>
+              <TouchableOpacity onPress={() => router.push('/history')} hitSlop={8}>
+                <Text style={styles.sectionLink}>Vedi tutto</Text>
+              </TouchableOpacity>
             </View>
             {recent.map((s) => (
               <TouchableOpacity
@@ -133,11 +132,6 @@ export default function DashboardScreen() {
         />
         <View style={styles.sheet}>
           <View style={styles.sheetHandle} />
-          <View style={[styles.ornamentRow, { marginBottom: 16 }]}>
-            <View style={styles.line} />
-            <Text style={styles.ornamentChar}>✦</Text>
-            <View style={styles.line} />
-          </View>
           <Text style={styles.sheetTitle}>SCEGLI ALLENAMENTO</Text>
           <TouchableOpacity
             style={styles.sheetOption}
@@ -173,8 +167,12 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   scroll: { flex: 1 },
-  content: { padding: 24, gap: 16 },
-  header: { alignItems: "center", gap: 8, paddingVertical: 8 },
+    content: { padding: 20, paddingBottom: 110, gap: 18 },
+  header: { gap: 8, paddingTop: 10, paddingBottom: 2 },
+  headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  eyebrow: { fontSize: 11, color: colors.textDim, fontWeight: '800', letterSpacing: 2 },
+  avatar: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.accentDim, alignItems: 'center', justifyContent: 'center' },
+  avatarText: { color: colors.accent, fontSize: 16, fontWeight: '900' },
   ornamentRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -183,72 +181,61 @@ const styles = StyleSheet.create({
   },
   line: { flex: 1, height: 1, backgroundColor: colors.border },
   ornamentChar: { color: colors.accent, fontSize: 12 },
-  appName: {
-    fontSize: 44,
-    fontWeight: "900",
-    color: colors.text,
-  },
   greeting: {
-    fontSize: 13,
+    fontSize: 28,
     color: colors.text,
-    letterSpacing: 3,
-    textTransform: "uppercase",
-    fontWeight: "700",
+    fontWeight: "900",
+    marginTop: 3,
   },
   dateText: {
-    fontSize: 11,
+    fontSize: 13,
     color: colors.textMuted,
-    letterSpacing: 2,
     textTransform: "capitalize",
   },
   startBtn: {
-    borderWidth: 1,
-    borderColor: colors.accent,
-    backgroundColor: colors.accentDim,
-    paddingVertical: 20,
-    alignItems: "center",
-  },
-  startBtnInner: { alignItems: "center", gap: 8 },
-  startBtnLabel: {
-    fontSize: 14,
-    fontWeight: "900",
-    color: colors.text,
-    letterSpacing: 5,
-  },
-  startBtnLine: {
-    width: 40,
-    height: 1,
     backgroundColor: colors.accent,
-    opacity: 0.6,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    borderRadius: 24,
+    shadowColor: colors.accent,
+    shadowOpacity: 0.2,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 7 },
   },
+  startBtnInner: { flexDirection: 'row', alignItems: "center", justifyContent: 'space-between' },
+  startEyebrow: { color: '#ffe3d8', fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 5 },
+  startBtnLabel: {
+    fontSize: 22,
+    fontWeight: "900",
+    color: '#fff',
+  },
+  startIcon: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+  startIconText: { color: colors.accent, fontSize: 24, fontWeight: '700' },
   statsRow: {
     flexDirection: "row",
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: 24,
+    overflow: 'hidden',
     backgroundColor: colors.surface,
   },
-  statCard: { flex: 1, alignItems: "center", paddingVertical: 20, gap: 8 },
-  statSep: { width: 1, backgroundColor: colors.border },
-  statNum: { fontSize: 40, fontWeight: "900", color: colors.accent },
-  statDivider: { width: 24, height: 1, backgroundColor: colors.border },
-  statLabel: { fontSize: 9, color: colors.textMuted, letterSpacing: 3 },
+  statCard: { flex: 1, padding: 18, gap: 8, minHeight: 108, justifyContent: 'center' },
+  statCardDark: { backgroundColor: colors.surfaceHigh },
+  statNum: { fontSize: 38, fontWeight: "900", color: colors.accent },
+  statNumLight: { color: '#fff' },
+  statDivider: { width: 22, height: 4, borderRadius: 2, backgroundColor: colors.accent },
+  statLabel: { fontSize: 10, color: colors.textDim, fontWeight: '800', letterSpacing: 1 },
+  statLabelLight: { color: '#aaa7a1' },
   section: { gap: 8 },
-  sectionHeader: { flexDirection: "row", alignItems: "center", gap: 8 },
-  sectionDot: {
-    width: 5,
-    height: 5,
-    backgroundColor: colors.accent,
-    transform: [{ rotate: "45deg" }],
-  },
-  sectionTitle: { fontSize: 10, color: colors.textMuted, letterSpacing: 4 },
+  sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: 'space-between', marginTop: 4 },
+  sectionTitle: { fontSize: 21, color: colors.text, fontWeight: '900' },
+  sectionLink: { fontSize: 11, color: colors.accent, fontWeight: '800' },
   sessionCard: {
     flexDirection: "row",
     alignItems: "center",
     gap: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
     backgroundColor: colors.surface,
-    padding: 16,
+    padding: 15,
+    borderRadius: 20,
+    shadowColor: '#6b625c', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 5 },
   },
   sessionDate: {
     display: "flex",
@@ -263,16 +250,17 @@ const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)" },
   sheet: {
     backgroundColor: colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     padding: 24,
     gap: 8,
     paddingBottom: 40,
   },
   sheetHandle: {
-    width: 36,
-    height: 3,
-    backgroundColor: colors.border,
+    width: 42,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: '#d7d1cb',
     alignSelf: "center",
     marginBottom: 16,
   },
@@ -286,9 +274,8 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 16,
     marginVertical: 4,
-    borderWidth: 1,
-    borderColor: colors.border,
     backgroundColor: colors.bg,
+    borderRadius: 16,
   },
   sheetOptionTemplate: { borderLeftColor: colors.accent, borderLeftWidth: 2 },
   sheetOptionText: {

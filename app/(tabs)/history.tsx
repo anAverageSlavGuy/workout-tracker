@@ -185,11 +185,6 @@ export default function HistoryScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.headerWrap}>
-        <View style={styles.ornamentRow}>
-          <View style={styles.line} />
-          <Text style={styles.ornamentChar}>✦</Text>
-          <View style={styles.line} />
-        </View>
         <View style={styles.headerRow}>
           <Text style={styles.title}>STORICO</Text>
           <View style={styles.viewTabs}>
@@ -310,7 +305,7 @@ export default function HistoryScreen() {
                     <Ionicons
                       name="download-outline"
                       size={15}
-                      color={colors.text}
+                      color="#fff"
                     />
                     <Text style={styles.exportText}>SCARICA</Text>
                   </>
@@ -365,7 +360,7 @@ export default function HistoryScreen() {
           renderItem={renderSession}
           contentContainerStyle={styles.list}
           ItemSeparatorComponent={() => (
-            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <View style={{ height: 8 }} />
           )}
           ListEmptyComponent={
             <Text style={styles.empty}>
@@ -886,15 +881,7 @@ function formatNumber(value: number) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  headerWrap: {
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 12,
-    gap: 8,
-  },
-  ornamentRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  line: { flex: 1, height: 1, backgroundColor: colors.border },
-  ornamentChar: { color: colors.accent, fontSize: 12 },
+  headerWrap: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 12 },
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -904,20 +891,19 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "900",
     color: colors.text,
-    letterSpacing: 8,
+    letterSpacing: 1,
   },
-  viewTabs: { flexDirection: "row", gap: 4 },
+  viewTabs: { flexDirection: "row", gap: 4, backgroundColor: colors.surface, padding: 4, borderRadius: 18 },
   viewTab: {
     width: 42,
     height: 32,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
   },
   viewTabActive: {
     backgroundColor: colors.accentDim,
-    borderColor: colors.accent,
+    borderRadius: 14,
   },
   viewTabText: {
     fontSize: 8,
@@ -937,10 +923,9 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 420,
     backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
     padding: 20,
     gap: 14,
+    borderRadius: 26,
   },
   accentLine: { width: 40, height: 2, backgroundColor: colors.accent },
   modalTitle: {
@@ -958,9 +943,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   selectBox: {
-    borderWidth: 1,
-    borderColor: colors.border,
     backgroundColor: colors.bg,
+    borderRadius: 18,
   },
   selectOption: {
     minHeight: 42,
@@ -968,8 +952,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomWidth: 0,
   },
   selectOptionActive: { backgroundColor: colors.accentDim },
   selectOptionText: {
@@ -982,17 +965,17 @@ const styles = StyleSheet.create({
   modalActions: { flexDirection: "row", gap: 10, marginTop: 4 },
   cancelBtn: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: colors.bg,
+    borderRadius: 16,
     paddingVertical: 12,
     alignItems: "center",
     justifyContent: "center",
   },
   exportBtn: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: colors.accent,
+    borderWidth: 0,
     backgroundColor: colors.accent,
+    borderRadius: 16,
     paddingVertical: 12,
     alignItems: "center",
     justifyContent: "center",
@@ -1015,8 +998,6 @@ const styles = StyleSheet.create({
   },
   filterScroll: {
     maxHeight: 48,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   filterContent: {
     paddingHorizontal: 16,
@@ -1027,14 +1008,13 @@ const styles = StyleSheet.create({
   chip: {
     paddingHorizontal: 12,
     paddingVertical: 4,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
     minHeight: 28,
-    height: 28,
+    height: 32,
   },
-  chipActive: { backgroundColor: colors.accentDim, borderColor: colors.accent },
+  chipActive: { backgroundColor: colors.accentDim },
   chipText: {
     fontSize: 9,
     color: colors.textMuted,
@@ -1043,14 +1023,16 @@ const styles = StyleSheet.create({
   },
   chipTextActive: { color: colors.accent },
   flatlist: { flex: 1 },
-  list: { paddingVertical: 0 },
+  list: { paddingVertical: 4, paddingHorizontal: 16, paddingBottom: 110 },
   card: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 16,
+    paddingVertical: 18,
     paddingHorizontal: 16,
     gap: 16,
-    backgroundColor: colors.bg,
+    backgroundColor: colors.surface,
+    borderRadius: 22,
+    shadowColor: '#6b625c', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 5 },
   },
   cardLeft: { alignItems: "center", width: 36 },
   cardDay: {
@@ -1105,8 +1087,7 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: 12,
     backgroundColor: colors.surface,
   },
   calendarDayOther: { opacity: 0.3, backgroundColor: colors.bg },

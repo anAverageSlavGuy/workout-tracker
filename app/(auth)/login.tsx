@@ -77,14 +77,9 @@ export default function LoginScreen() {
           <View style={styles.ornamentLine} />
         </View>
 
-        <Text style={styles.title}>PUMPING IRON</Text>
-        <Text style={styles.subtitle}>track your progression</Text>
-
-        <View style={styles.ornamentMid}>
-          <View style={[styles.ornamentLine, { flex: 1 }]} />
-          <Text style={styles.ornamentChar}>✦</Text>
-          <View style={[styles.ornamentLine, { flex: 1 }]} />
-        </View>
+        <View style={styles.brandMark}><Text style={styles.brandMarkText}>PI</Text></View>
+        <Text style={styles.title}>Pumping Iron</Text>
+        <Text style={styles.subtitle}>Allenati. Tieni il ritmo.</Text>
 
         <View style={styles.tabs}>
           <TouchableOpacity
@@ -164,7 +159,7 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg, justifyContent: "center" },
-  inner: { paddingHorizontal: 32, gap: 16 },
+  inner: { marginHorizontal: 20, padding: 24, gap: 16, backgroundColor: colors.surface, borderRadius: 30, shadowColor: '#6b625c', shadowOpacity: 0.1, shadowRadius: 24, shadowOffset: { width: 0, height: 10 } },
   ornamentTop: {
     flexDirection: "row",
     alignItems: "center",
@@ -183,7 +178,7 @@ const styles = StyleSheet.create({
     gap: 8,
     marginVertical: 0,
   },
-  ornamentLine: { height: 1, backgroundColor: colors.border, flex: 1 },
+  ornamentLine: { height: 1, backgroundColor: '#eee8e2', flex: 1 },
   ornamentDiamond: {
     width: 6,
     height: 6,
@@ -191,52 +186,52 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "45deg" }],
   },
   ornamentChar: { color: colors.accent, fontSize: 12 },
+  brandMark: { width: 54, height: 54, borderRadius: 18, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginBottom: 2 },
+  brandMarkText: { color: '#fff', fontSize: 20, fontWeight: '900', letterSpacing: -1 },
   title: {
-    fontSize: 42,
+    fontSize: 34,
     fontWeight: "900",
     color: colors.text,
     textAlign: "center",
-    lineHeight: 46,
+    lineHeight: 40,
   },
   subtitle: {
     fontSize: 11,
     color: colors.textMuted,
     textAlign: "center",
-    letterSpacing: 5,
+    letterSpacing: 1,
     textTransform: "uppercase",
     marginTop: -8,
   },
   tabs: {
     flexDirection: "row",
-    backgroundColor: colors.surface,
-    borderRadius: 2,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: colors.bg,
+    borderRadius: 18,
+    padding: 4,
   },
-  tabBtn: { flex: 1, paddingVertical: 12, alignItems: "center" },
-  tabActive: { backgroundColor: colors.accentDim, borderWidth: 0 },
+  tabBtn: { flex: 1, paddingVertical: 12, alignItems: "center", borderRadius: 14 },
+  tabActive: { backgroundColor: colors.surface, shadowColor: '#6b625c', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 3 } },
   tabText: {
     fontSize: 13,
     fontWeight: "600",
     color: colors.textMuted,
-    letterSpacing: 2,
+    letterSpacing: 0.5,
     textTransform: "uppercase",
   },
   tabTextActive: { color: colors.accent },
   input: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.bg,
     color: colors.text,
-    borderRadius: 2,
+    borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 15,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderWidth: 0,
     letterSpacing: 1,
   },
   primaryBtn: {
     backgroundColor: colors.accent,
-    borderRadius: 2,
+    borderRadius: 17,
     paddingVertical: 16,
     alignItems: "center",
     marginTop: 0,
@@ -245,7 +240,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "900",
     color: "#fff",
-    letterSpacing: 4,
+    letterSpacing: 1,
   },
   forgotText: {
     textAlign: "center",
